@@ -1,4 +1,4 @@
-/* $Id: mldonkey.h,v 1.6 2003/07/24 22:17:01 tim Exp $
+/* $Id: mldonkey.h,v 1.7 2003/07/24 22:38:41 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -16,7 +16,6 @@
 // Proto: 14 (BIG Endian hex defined)
 #define MLDONKEY_PROTO_VER 0x0000000e
 
-#define MLDEBUG
 #define UInt16_MAX 65535
 #define ML_MSG_MAX_SIZE 32768
 
@@ -29,7 +28,7 @@
 
 extern Err MLsocket(MLconfig *config, NetSocketRef *socket);
 extern Boolean MLsocketIsOpen(NetSocketRef socket, Err *err);
-extern Err MLsocketWrite(MLguiCode opcode, MemHandle *content);
+extern Err MLsocketWrite(MLguiCode opcode, MemHandle *content, UInt32 contentSize);
 extern Err MLsocketRead(MemHandle *data, UInt32 size);
 
 extern Err MLconnect(MLconfig *config);

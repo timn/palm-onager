@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.11 2003/07/24 22:17:01 tim Exp $
+/* $Id: mldonkey.c,v 1.12 2003/07/24 22:38:41 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -48,53 +48,48 @@ Boolean MLdataWaiting(UInt32 *size, MLcoreCode *opcode) {
 }
 
 
-Err MLsocketWrite(MLguiCode opcode, MemHandle *content) {
+Err MLsocketWrite(MLguiCode opcode, MemHandle *content, UInt32 contentSize) {
   Char *buffer;
-  UInt32 toSent;
+  UInt32 toSent=0;
   UInt16 sent;
-  Err err;
-  MLmsg *msg;
-  MemHandle message;
+  Err err=errNone;
+  MLmsgHead head;
 
   NetTrafficStart();
 
-  if (content != NULL) {
-    toSent = MemHandleSize(*content);
-  } else {
-    toSent = 0;
-  }
-  message = MemHandleNew(toSent + sizeof(MLmsgHead));
+  if (content == NULL) contentSize = 0;
 
-  msg = (MLmsg *)MemHandleLock(message);
-  msg->head.size = NetSwap32(toSent+2); // +2 for opcode
-  msg->head.opcode = NetSwap16(opcode);
-
-  buffer = (Char *)msg;
-  buffer += sizeof(MLmsgHead);
-
-  if (content != NULL) {
-    MemMove(buffer, MemHandleLock(*content), toSent);
-    MemHandleUnlock(*content);
-  }
-  toSent += sizeof(MLmsgHead);
-
-  buffer = (Char *)msg;
-  err = errNone;
+  head.size = NetSwap32(contentSize+2); // +2 for opcode
+  head.opcode = NetSwap16(opcode);
 
   if (MLsocketIsOpen(gMLsocket, &err)) {
+
+    // Send header
+    buffer = (Char *)&head;
+    toSent = sizeof(MLmsgHead);
     while ((toSent > 0) && (err == errNone)) {
       sent = NetLibSend(gNetReference, gMLsocket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
       toSent -= sent;
       buffer += sent;
     }
+
+    // Send data
+    if (contentSize > 0) {
+      buffer = (Char *)MemHandleLock(*content);
+      toSent = contentSize;
+      while ((toSent > 0) && (err == errNone)) {
+        sent = NetLibSend(gNetReference, gMLsocket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
+        toSent -= sent;
+        buffer += sent;
+      }
+      MemHandleUnlock(*content);
+    }
+
   } else {
     FrmCustomAlert(ALERT_debug, "Write attempt on closed socket", "", "");
     MLdisconnect();
     FrmGotoForm(FORM_main);
   }
-
-  MemHandleUnlock(message);
-  MemHandleFree(message);
 
   NetTrafficStop();
 

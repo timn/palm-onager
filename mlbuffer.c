@@ -1,4 +1,4 @@
-/* $Id: mlbuffer.c,v 1.1 2003/07/24 21:31:41 tim Exp $
+/* $Id: mlbuffer.c,v 1.2 2003/07/24 22:38:41 tim Exp $
  *
  * Write buffer convenience stuff
  * Created: July 24th 2003
@@ -80,11 +80,11 @@ void MLbuffer_write(MLguiCode opcode) {
   if ( gMLbuffer != NULL ) {
     if (gMLbuffer->size > 0) {
       MemHandleUnlock(gMLbuffer->buffer_handle);
-      MLsocketWrite(opcode, &gMLbuffer->buffer_handle);
+      MLsocketWrite(opcode, &gMLbuffer->buffer_handle, gMLbuffer->size);
       gMLbuffer->buffer_ptr = MemHandleLock(gMLbuffer->buffer_handle);
       MLbuffer_destroy();
     } else {
-      MLsocketWrite(opcode, NULL);
+      MLsocketWrite(opcode, NULL, 0);
     }
   }
 }
