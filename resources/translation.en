@@ -1,4 +1,4 @@
-/* $Id: translation.en,v 1.4 2003/07/24 21:32:29 tim Exp $ */
+/* $Id: translation.en,v 1.5 2003/07/29 20:32:42 tim Exp $ */
 
 translation "english"
 begin
@@ -26,6 +26,8 @@ begin
   "al_iff2" = "At least one network device could not be started."
   "al_nocon1" = "Cannot connect"
   "al_nocon2" = "Could not connect. Maybe your IP is not allowed to connect?"
+  "al_pwd1" = "Login failed"
+  "al_pwd2" = "User name and/or password are invalid."
 
 
 /* about */
@@ -67,7 +69,6 @@ begin
   "connprog_est" = "Establishing connection..."
   "connprog_auth" = "Authenticating with server..."
   "connprog_succ" = "Login successful"
-  "connprog_bad" = "User name and/or password are invalid."
 
 
 /* Files list fetch progress */
@@ -77,6 +78,11 @@ begin
   "filesprog_work" = "Downloading file list...\nWorking on %u of %u"
   "filesprog_done" = "Download done.\n%u file specs received"
   "filesprog_fallback" = "Downloading file list..."
+
+
+/* Chunks Gadget */
+  "chunks_no" = "No chunk info available"
+  "chunks_toomany" = "Cannot display chunks"
 
 
 end

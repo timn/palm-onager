@@ -1,4 +1,4 @@
-/* $Id: translation.de,v 1.4 2003/07/24 21:32:29 tim Exp $ */
+/* $Id: translation.de,v 1.5 2003/07/29 20:32:42 tim Exp $ */
 
 translation "german"
 begin
@@ -26,6 +26,8 @@ begin
   "al_iff2" = "Mindestens ein Netzwerkinterface konnte nicht gestartet werden."
   "al_nocon1" = "Keine Verbindung"
   "al_nocon2" = "Keine Verbindund möglich. Vielleicht darf Ihre IP nicht verbinden?"
+  "al_pwd1" = "Login fehlgeschlagen"
+  "al_pwd2" = "Benutzername und/oder Passwort ungültig."
 
 
 /* about */
@@ -67,7 +69,6 @@ begin
   "connprog_est" = "Baue Verbindung auf..."
   "connprog_auth" = "Authentifiziere an Server..."
   "connprog_succ" = "Login erfolgreich"
-  "connprog_bad" = "Benutzername und/oder Passwort ungültig."
 
 
 /* Files list fetch progress */
@@ -77,6 +78,11 @@ begin
   "filesprog_work" = "Hole Dateiliste...\nErhalte %u von %u"
   "filesprog_done" = "Download fertig.\n%u Dateiinformationen erhalten"
   "filesprog_fallback" = "Hole Dateiliste"
+
+
+/* Chunks Gadget */
+  "chunks_no" = "Keine Chunk-Info verfügbar"
+  "chunks_toomany" = "Kann Chunks nicht darstellen"
 
 
 end
