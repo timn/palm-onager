@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: index.php,v 1.5 2003/07/29 23:10:43 tim Exp $ */
+/* $Id: index.php,v 1.6 2003/07/29 23:20:44 tim Exp $ */
 
 $title="niemueller.de - palm software - Onager";
 $meta_desc="MLdonkey GUI for your PalmOS handheld.";
@@ -31,7 +31,7 @@ box_begin("Onager", "Last modified ".date ("F d Y H:i:s.", getlastmod()));
 <div class="maintext">
 <h5>Introduction</h5>
 This PalmOS applications acts as a really simple GUI to your
-<a href="http://www.mldonkey.net">mldonkey</a>. It uses
+<a href="http://www.mldonkey.net" target="_new">mldonkey</a>. It uses
 the low bandwidth (and low/almost not documented) GUI protocol to communicate
 with your mldonkey. Right now it can display currently downloading and already
 downloaded files and some basic stats. It can also commit files (I do not like
@@ -84,7 +84,7 @@ and it should be simple to add new features now. Read about the known issues bel
 <h5>Thanks</h5>
 Thanks for all the user contributions for those ideas!
 <br/><br/>
-A special thanks to my friend <a href="http://www.badcode.de">Medha</a> who
+A special thanks to my friend <a href="http://www.badcode.de" target="_new">Medha</a> who
 pushed me to start this project and who helped to find some bugs.
 All remaining bugs are my fault, of course. I probably inserted them after Medha's checks...
 
@@ -167,7 +167,7 @@ wanna help?
 
 <h5>Download</h5>
 Onager is released and distributed under the terms of the
-<a href="http://www.gnu.org/licenses/gpl.html#SEC1">GNU General Public License (GPL)</a>.
+<a href="http://www.gnu.org/licenses/gpl.html#SEC1" target="_new">GNU General Public License (GPL)</a>.
 <br/>
 <span style="color: red;">By downloading and/or using the software you agree
 to this license!</span>
