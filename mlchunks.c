@@ -1,4 +1,4 @@
-/* $Id: mlchunks.c,v 1.3 2003/07/10 15:07:02 tim Exp $
+/* $Id: mlchunks.c,v 1.4 2003/07/10 22:57:29 tim Exp $
  *
  * ML chunk gadget code
  * Created: April 10th 2003
@@ -98,7 +98,7 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
     }
 
     // Draw the chunk
-    RctSetRectangle(&rect, bounds.topLeft.x + (chunkWidth * i) + ((i < chunksWithExtra) ? 1 : 0) + min(i, chunksWithExtra),
+    RctSetRectangle(&rect, bounds.topLeft.x + (chunkWidth * i) + min(i, chunksWithExtra),
                            bounds.topLeft.y,
                            chunkWidth + ((i < chunksWithExtra) ? 1 : 0),
                            bounds.extent.y);

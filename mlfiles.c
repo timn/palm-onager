@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.3 2003/07/10 15:07:02 tim Exp $
+/* $Id: mlfiles.c,v 1.4 2003/07/10 22:57:29 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -11,11 +11,11 @@
 #include "mlchunks.h"
 
 MLcallbackID gMLfilesCbID;
-TNlist *gMLfilesList;
+TNlist *gMLfilesList=NULL;
 UInt16 gMLfilesNumFiles=0;
 Char *gMLfilesTrigger = NULL;
 ProgressStatus gMLfilesProgStat;
-ProgressType *gMLfilesProgress;
+ProgressType *gMLfilesProgress=NULL;
 MLchunkInfo gMLfilesChunkInfo;
 Char *gMLfilesStrings[MLFILES_NUM_STRINGS];
 
@@ -33,6 +33,7 @@ void FilesFree(void) {
     tmpList = tmpList->next; 
   }
   TNlistFree(gMLfilesList);
+  gMLfilesList = NULL;
   if (gMLfilesChunkInfo.chunks != NULL) {
     MemPtrFree(gMLfilesChunkInfo.chunks);
     gMLfilesChunkInfo.chunks = NULL;
@@ -41,10 +42,11 @@ void FilesFree(void) {
     MemPtrFree(gMLfilesChunkInfo.availability);
     gMLfilesChunkInfo.availability = NULL;
   }
-
-  if (gMLfilesStrings[i] != NULL) {
-    MemPtrFree(gMLfilesStrings[i]);
-    gMLfilesStrings[i] = NULL;
+  for (i=0; i < MLFILES_NUM_STRINGS; ++i) {
+    if (gMLfilesStrings[i] != NULL) {
+      MemPtrFree(gMLfilesStrings[i]);
+      gMLfilesStrings[i] = NULL;
+    }
   }
 }
 
@@ -72,11 +74,14 @@ static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **items
 
 static void FilesUpdate(UInt16 n) {
   MLfileInfo *file = FilesGetFile(n);
-  Char *name, *chunks, *availability, *tmp;
+  Char *name, *chunks, *availability, *tmp, *tmp2, *tmp3;
   ControlType *ctl=TNGetObjectPtr(FILES_trigger);
   RectangleType list_bounds;
   FormType *frm=FrmGetActiveForm();
   UInt16 numChars = 0;
+  FlpCompDouble rate;
+  UInt32 mantissa;
+  Int16 exponent, sign;
 
   if (! file)  return;
 
@@ -124,7 +129,6 @@ static void FilesUpdate(UInt16 n) {
   FrmSetGadgetHandler(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks), MLchunkGadgetHandler);
 
   /* Set labels */
-/*
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
@@ -146,18 +150,44 @@ static void FilesUpdate(UInt16 n) {
   // Download rate
   if (gMLfilesStrings[MLFILES_RATE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_RATE]);
   tmp = MemHandleLock(file->download_rate);
-  gMLfilesStrings[MLFILES_RATE] = MemPtrNew(StrLen(tmp)+1);
-  MemSet(tmp, StrLen(tmp)+1, 0);
-  StrNCopy(gMLfilesStrings[MLFILES_RATE], tmp, StrLen(tmp));
+  FlpBufferAToF(&rate.fd, tmp);
+  rate.d /= 1024;
   MemHandleUnlock(file->download_rate);
+
+  gMLfilesStrings[MLFILES_RATE] = MemPtrNew(20);
+  tmp = MemPtrNew(20);
+  tmp2 = MemPtrNew(20);
+  MemSet(gMLfilesStrings[MLFILES_RATE], 20, 0);
+  MemSet(tmp2, 20, 0);
+
+  FlpBase10Info(rate.fd, &mantissa, &exponent, &sign);
+
+  StrIToA(tmp, mantissa);
+  StrNCopy(tmp2, tmp, StrLen(tmp)+exponent);
+  tmp3 = tmp;
+  StrNCopy(tmp3, tmp+StrLen(tmp)+exponent, 1);;
+  if (StrLen(tmp3) == 0) {
+    // We want at least one digit, string is 20 long, so there should be plenty
+    // of space...
+    StrCopy(tmp3, "0");
+  }
+
+  StrPrintF(gMLfilesStrings[MLFILES_RATE], "%s.%s", tmp2, tmp3);
+  
+  FrmCustomAlert(ALERT_debug, gMLfilesStrings[MLFILES_RATE], " - ", tmp2);
+  MemPtrFree(tmp);
+  MemPtrFree(tmp2);
+  // StrIToA(gMLfilesStrings[MLFILES_RATE], exponent);
+
   ctl = TNGetObjectPtr(FILES_rate);
   CtlSetLabel(ctl, gMLfilesStrings[MLFILES_RATE]);
+
+  
   
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
-*/
 
   // Draw the form to get data displayed
   FrmDrawForm(frm);
@@ -212,7 +242,7 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   if (cbP->stage == 1) {
     StrCopy(temp_string, "Requested file list from server\nWaiting for response");
   } else if ((p != NULL) && (p->current == p->max)) {
-    StrCopy(temp_string, "Download done.");
+    StrPrintF(temp_string, "Download done.\n%u file specs received", p->max);
     cbP->delay=true;
   } else {
     if (p != NULL) StrPrintF(temp_string, "Downloading file list...\nWorking on %u of %u", p->current, p->max);
@@ -228,7 +258,6 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
 }
 
 static void FilesFormInit(FormType *frm) {
-  frm = FrmGetActiveForm();
 
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
@@ -242,6 +271,8 @@ static void FilesFormInit(FormType *frm) {
 
   FrmDrawForm (frm);
 
+  FilesFree();
+  
   gMLfilesProgStat.max=1;
   gMLfilesProgStat.current=0;
 
@@ -269,7 +300,6 @@ Boolean FilesFormHandleEvent(EventType *event) {
 
       case FILES_ding:
         FilesFormInit(frm);
-        FilesFree();
         handled = true;
         break;
       
@@ -284,11 +314,16 @@ Boolean FilesFormHandleEvent(EventType *event) {
     return HandleMenuEvent(event->data.menu.itemID);
   } else if (event->eType == frmUpdateEvent) {
     // redraws the form if needed
-    frm = FrmGetActiveForm();
     FrmDrawForm (frm);
     handled = true;
   } else if (event->eType == frmOpenEvent) {
     // initializes and draws the form at program launch
+    UInt8 i;
+    gMLfilesChunkInfo.chunks = NULL;
+    gMLfilesChunkInfo.availability = NULL;
+    for (i=0; i < MLFILES_NUM_STRINGS; ++i) {
+      gMLfilesStrings[i]=NULL;
+    }
     FilesFormInit(frm);
     handled = true;
   } else if (event->eType == frmCloseEvent) {
