@@ -82,7 +82,8 @@ module.include.files=\
 	mlcallback.h\
 	mlchunks.h\
 	mlfiles.h\
-	progress.h
+	progress.h\
+	mlbuffer.h
 
 module.source.name=.
 module.source.type=
@@ -97,7 +98,8 @@ module.source.files=\
 	mlcallback.c\
 	mlchunks.c\
 	mlfiles.c\
-	progress.c
+	progress.c\
+	mlbuffer.c
 
 module.pixmap.name=.
 module.pixmap.type=

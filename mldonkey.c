@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.8 2003/07/23 22:20:42 tim Exp $
+/* $Id: mldonkey.c,v 1.9 2003/07/24 21:31:41 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -13,8 +13,6 @@
 extern UInt16 gNetReference;
 Int32 gMLtimeout=5;
 NetSocketRef gMLsocket=NULL;
-MemHandle gMLbufferHandle;
-Char *gMLbuffer=NULL;
 MLconfig *gMLconfig=NULL;
 Boolean gMLprocessLocked=true;
 MLcallbackID gMLstatsFooterCbID, gMLdingCbID, gMLdledCbID, gMLnetworkCbID, gMLcoreProtoCbID, gMLbadPassCbID;
@@ -195,8 +193,36 @@ Err MLread_String(MemHandle *stringHandle) {
 }
 
 
+Boolean MLdataWaiting(UInt32 *size, MLcoreCode *opcode) {
+  NetFDSetType readFDs, writeFDs, exceptFDs;
+  Err err;
+  
+  netFDZero(&readFDs);
+  netFDZero(&writeFDs);
+  netFDZero(&exceptFDs);
+  
+  netFDSet(gMLsocket, &readFDs);
+  if (NetLibSelect(gNetReference, gMLsocket+1, &readFDs, &writeFDs, &exceptFDs, 0, &err) > 0) {
 
-Err MLwriteSocket(MLguiCode opcode, MemHandle *content, NetSocketRef socket) {
+    if (netFDIsSet(gMLsocket, &readFDs)) {
+      // Now check if there are really bytes to read.
+      // If the bit is set that only quarantees that the following call will succeed
+      // quickly, either fail quicky or deliver data quickly
+      MLmsgHead head;
+      UInt16 recd = NetLibReceive(gNetReference, gMLsocket, &head, sizeof(head), netIOFlagPeek, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
+      if (recd == sizeof(head)) {
+        if (size != NULL)   *size   = NetSwap32(head.size)-2; // -2 for opcode
+        if (opcode != NULL) *opcode = NetSwap16(head.opcode);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+
+Err MLsocketWrite(MLguiCode opcode, MemHandle *content) {
   Char *buffer;
   UInt32 toSent;
   UInt16 sent;
@@ -231,7 +257,7 @@ Err MLwriteSocket(MLguiCode opcode, MemHandle *content, NetSocketRef socket) {
 
   if (MLsocketIsOpen(gMLsocket, &err)) {
     while ((toSent > 0) && (err == errNone)) {
-      sent = NetLibSend(gNetReference, socket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
+      sent = NetLibSend(gNetReference, gMLsocket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
       toSent -= sent;
       buffer += sent;
     }
@@ -248,103 +274,6 @@ Err MLwriteSocket(MLguiCode opcode, MemHandle *content, NetSocketRef socket) {
 
   return err;
 }
-
-Err MLwrite(MLguiCode opcode, MemHandle *content) {
-  return MLwriteSocket(opcode, content, gMLsocket);
-}
-
-
-Boolean MLdataWaiting(UInt32 *size, MLcoreCode *opcode) {
-  NetFDSetType readFDs, writeFDs, exceptFDs;
-  Err err;
-  
-  netFDZero(&readFDs);
-  netFDZero(&writeFDs);
-  netFDZero(&exceptFDs);
-  
-  netFDSet(gMLsocket, &readFDs);
-  if (NetLibSelect(gNetReference, gMLsocket+1, &readFDs, &writeFDs, &exceptFDs, 0, &err) > 0) {
-
-    if (netFDIsSet(gMLsocket, &readFDs)) {
-      // Now check if there are really bytes to read.
-      // If the bit is set that only quarantees that the following call will succeed
-      // quickly, either fail quicky or deliver data quickly
-      MLmsgHead head;
-      UInt16 recd = NetLibReceive(gNetReference, gMLsocket, &head, sizeof(head), netIOFlagPeek, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-      if (recd == sizeof(head)) {
-        if (size != NULL)   *size   = NetSwap32(head.size)-2; // -2 for opcode
-        if (opcode != NULL) *opcode = NetSwap16(head.opcode);
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-void MLbuffer_create(UInt16 size) {
-  if (size > 0) {
-    gMLbufferHandle = MemHandleNew(size);
-    gMLbuffer = MemHandleLock(gMLbufferHandle);
-  }
-}
-
-
-void MLbuffer_append_Data(void *appData, UInt16 appLen) {
-  if (gMLbuffer != NULL) {
-    MemMove(gMLbuffer, appData, appLen);
-    gMLbuffer += appLen;
-  }
-}
-
-void MLbuffer_append_String(Char *appStr) {
-  if (gMLbuffer != NULL) {
-    UInt16 length = StrLen(appStr);
-    MLbuffer_append_UInt16(length);
-    MLbuffer_append_Data(appStr, length);
-  }
-}
-
-void MLbuffer_append_UInt32(UInt32 ui32) {
-  ui32 = NetSwap32(ui32);
-  MLbuffer_append_Data(&ui32, sizeof(UInt32));
-}
-
-
-void MLbuffer_append_UInt16(UInt16 ui16) {
-  ui16 = NetSwap16(ui16);
-  MLbuffer_append_Data(&ui16, sizeof(UInt16));
-}
-
-void MLbuffer_append_UInt8(UInt8 ui8) {
-  MLbuffer_append_Data(&ui8, sizeof(UInt8));
-}
-
-
-void MLbuffer_write(MLguiCode opcode) {
-  if (gMLbuffer != NULL) {
-    MemHandleUnlock(gMLbufferHandle);
-    MLwrite(opcode, &gMLbufferHandle);
-    gMLbuffer = MemHandleLock(gMLbufferHandle);
-  } else {
-    MLwrite(opcode, NULL);
-  }
-}
-
-void MLbuffer_destroy(void) {
-  if (gMLbuffer != NULL) {
-    MemHandleUnlock(gMLbufferHandle);
-    MemHandleFree(gMLbufferHandle);
-    gMLbuffer = NULL;
-  }
-}
-
-void MLrequest(MLguiCode opcode) {
-    MLbuffer_create(0);
-    MLbuffer_write(opcode);
-    MLbuffer_destroy();
-}
-
 
 
 MLnetInfo* MLnetworkGetByID(UInt32 id) {
@@ -444,7 +373,7 @@ Err MLdisconnect(void) {
   Err err;
   TNlist *tmpList;
 
-  if (gMLconfig->connected)
+  if (gMLconfig->connected && gNetReference)
     NetLibSocketClose(gNetReference, gMLsocket, gMLtimeout, &err);
 
   gMLconfig->connected = false;
@@ -519,19 +448,17 @@ static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
   ProgressUpdate(errNone, 2, NULL, false);
 
   // Our supported GUI Extensions
-  MLbuffer_create(sizeof(UInt16)+sizeof(UInt32)+sizeof(UInt8));
+  MLbuffer_create();
   MLbuffer_append_UInt16(1);
   MLbuffer_append_UInt32(1);
   MLbuffer_append_UInt8(1);
   MLbuffer_write(GuiExtensions);
-  MLbuffer_destroy();        
-
+  
   // Send user and password
-  MLbuffer_create(StrLen(gMLconfig->password)+2+StrLen(gMLconfig->login)+2);
+  MLbuffer_create();
   MLbuffer_append_String(gMLconfig->password);
   MLbuffer_append_String(gMLconfig->login);
   MLbuffer_write(AuthUserPass);
-  MLbuffer_destroy();
 
   NetTrafficStop();
 }
@@ -568,10 +495,9 @@ Err MLconnect(MLconfig *config) {
   if ( ((err = MLsocket(gMLconfig, &gMLsocket)) == errNone) &&
        MLsocketIsOpen(gMLsocket, &err) ) {
 
-    MLbuffer_create(sizeof(UInt32));
+    MLbuffer_create();
     MLbuffer_append_UInt32(MLDONKEY_PROTO_VER);
     MLbuffer_write(GuiProto);
-    MLbuffer_destroy();        
 
     MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLgoodPassCb);
     MLcallbackRegister(DownloadFiles_v4, &gMLdingCbID, MLfilesCb);

@@ -5,6 +5,15 @@
 
 === v0.1
 
+* Thu Jul 25 2003 Tim Niemueller <tim@niemueller.de>
+- New feature: downloading files with unavailable chunks are drawn red in files
+  list
+- Added commit ability
+- New buffer framework (see mlbuffer.(c|h)). Makes life easier as buffer is
+  now "more managed" than before. Less work in buffer-using code, moved to
+  buffer itself
+- changed mldonkey.(c|h) to use new buffer framework
+
 * Tue Jul 23 2003 Tim Niemueller <tim@niemueller.de>
 - Various, forgot CHANGEs file...
 - basic features working, infrastructure works
@@ -25,4 +34,4 @@
 - Dev Session at Tob. Created project on Medha's pushing
 
 
-$Id: CHANGES,v 1.2 2003/07/23 22:20:42 tim Exp $
+$Id: CHANGES,v 1.3 2003/07/24 21:31:41 tim Exp $

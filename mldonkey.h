@@ -1,4 +1,4 @@
-/* $Id: mldonkey.h,v 1.4 2003/07/22 18:08:30 tim Exp $
+/* $Id: mldonkey.h,v 1.5 2003/07/24 21:31:41 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -10,6 +10,7 @@
 #include "UniDonkey.h"
 #include "mltypes.h"
 #include "mlcallback.h"
+#include "mlbuffer.h"
 
 // Proto: 14 (BIG Endian hex defined)
 #define MLDONKEY_PROTO_VER 0x0000000e
@@ -27,6 +28,8 @@
 
 extern Err MLsocket(MLconfig *config, NetSocketRef *socket);
 extern Boolean MLsocketIsOpen(NetSocketRef socket, Err *err);
+extern Err MLsocketWrite(MLguiCode opcode, MemHandle *content);
+
 extern Err MLconnect(MLconfig *config);
 extern Err MLdisconnect(void);
 
@@ -45,19 +48,6 @@ extern Err MLread_UInt16(UInt16 *ui16);
 extern Err MLread_UInt32(UInt32 *ui32);
 extern Err MLread_UInt64(UInt64 *ui64);
 extern Err MLread_String(MemHandle *stringHandle);
-
-extern Err MLwriteSocket(MLguiCode opcode, MemHandle *content, NetSocketRef socket);
-extern Err MLwrite(MLguiCode opcode, MemHandle *content);
-
-extern void MLbuffer_create(UInt16 size);
-extern void MLbuffer_append_Data(void *appData, UInt16 appLen);
-extern void MLbuffer_append_String(Char *appStr);
-extern void MLbuffer_append_UInt32(UInt32 ui32);
-extern void MLbuffer_append_UInt16(UInt16 ui16);
-extern void MLbuffer_append_UInt8(UInt8 ui8);
-extern void MLbuffer_write(MLguiCode opcode);
-extern void MLbuffer_destroy(void);
-extern void MLrequest(MLguiCode opcode);
 
 extern MLnetInfo* MLnetworkGetByID(UInt32 id);
 

@@ -1,4 +1,4 @@
-/* $Id: mltypes.h,v 1.3 2003/07/22 18:08:30 tim Exp $
+/* $Id: mltypes.h,v 1.4 2003/07/24 21:31:41 tim Exp $
  *
  * Types for mldonkey conversation
  * Created: March 22th 2003
@@ -225,6 +225,13 @@ typedef struct {
 } MLnetInfo;
 
 
+typedef struct {
+  UInt32      size;
+  UInt32      handle_size;
+  MemHandle   buffer_handle;
+  MemPtr      buffer_ptr;
+  Char       *buffer;
+} MLbufferInfo;
 
 
 typedef UInt8 MLcallbackID;
