@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: faq.php,v 1.1 2003/07/09 12:05:16 tim Exp $ */
+/* $Id: faq.php,v 1.1.1.1 2003/07/09 12:05:16 tim Exp $ */
 
 $title="niemueller.de - palm software - UniDonkey - FAQ";
 $meta_desc="Palm GUI Frontend for the MLdonkey P2P network client";
