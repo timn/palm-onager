@@ -1,4 +1,4 @@
-/* $Id: tnlist.h,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: tnlist.h,v 1.2 2003/07/29 20:31:24 tim Exp $
  *
  * Palm specific list
  * Created: April 7th 2003
@@ -26,6 +26,6 @@ extern void     TNlistFree(TNlist *list);
 extern void     TNlistFreeNode(TNlist *list);
 extern TNlist*  TNlistRemove(TNlist *list, void *data);
 extern TNlist*  TNlistSearch(TNlist *list, void *data, TNlistComparFunc *func);
-extern TNlist* TNlistGetNth(TNlist *list, UInt32 n);
+extern void*    TNlistGetNth(TNlist *list, UInt16 n);
 
 #endif //TNLIST_H

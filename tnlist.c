@@ -1,4 +1,4 @@
-/* $Id: tnlist.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: tnlist.c,v 1.2 2003/07/29 20:31:24 tim Exp $
  *
  * Palm specific list
  * Created: April 7th 2003
@@ -137,11 +137,12 @@ TNlist* TNlistSearch(TNlist *list, void *data, TNlistComparFunc *func) {
   }
 }
 
-TNlist* TNlistGetNth(TNlist *list, UInt32 n) {
-  UInt32 i;
+void* TNlistGetNth(TNlist *list, UInt16 n) {
   TNlist *tmp=list;
-  for (i=0; (i < n) && (tmp != NULL); ++i) {
+
+  while ( (n-- >= 1) && tmp ) {
     tmp = tmp->next;
   }
-  return tmp;
+
+  return tmp ? tmp->data : NULL;
 }
