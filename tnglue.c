@@ -1,4 +1,4 @@
-/* $Id: tnglue.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: tnglue.c,v 1.2 2003/07/22 19:13:07 tim Exp $
  *
  * tnglue. See tnglue.h for more info
  * Created: 2002-07-11
@@ -126,3 +126,16 @@ void * TNGetObjectPtr(UInt16 objectID) {
 	return (FrmGetObjectPtr(frm, FrmGetObjectIndex(frm, objectID)));
 }
 
+
+/***********************************************************************
+ * FUNCTION:    TNGetLockedString
+ * DESCRIPTION: This routine returns a pointer to a locked string which
+ *              has been retrieved from a STRING resource.
+ *              !!! USE MemPtrUnlock WHEN DONE WITH THE STRING !!!
+ * PARAMETERS:  stringID - ID of the string to be retrieved
+ ***********************************************************************/
+MemPtr TNGetLockedString(UInt16 stringID) {
+  MemHandle m;
+  m = DmGetResource(strRsc, stringID);
+  return MemHandleLock(m);
+}

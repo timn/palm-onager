@@ -1,4 +1,4 @@
-/* $Id: tnglue.h,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: tnglue.h,v 1.2 2003/07/22 19:13:09 tim Exp $
  *
  * tnglue.h: Glue code to add some functions missing in 3.5 but present in 4.0+
  *
@@ -31,3 +31,4 @@ extern void TNSetTextColorRGB(RGBColorType *new, RGBColorType *old);
 extern void TNDrawCharsToFitWidth(const char *s, RectanglePtr r);
 extern UInt16 TNGetObjectIndexFromPtr(FormType *form, void *formObj);
 extern void * TNGetObjectPtr(UInt16 objectID);
+extern MemPtr TNGetLockedString(UInt16 stringID);
