@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.2 2003/07/10 10:01:47 tim Exp $
+/* $Id: net.h,v 1.3 2003/07/17 00:21:45 tim Exp $
  *
  * Network related functions
  * Created: March 12th 2003
@@ -15,7 +15,7 @@
 
 #define NET_INVSOCK ((NetSocketRef) -1)
 
-#define NET_BITMAP_X 62
+#define NET_BITMAP_X 76
 #define NET_BITMAP_Y 1
 #define NET_BITMAP_WIDTH 11
 #define NET_BITMAP_HEIGHT 11
