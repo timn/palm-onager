@@ -12,8 +12,8 @@ R = ./
 include *.mk
 
 CC = m68k-palmos-gcc
-CFLAGS = -Wall -g
-LDFLAGS = -g
+CFLAGS = -Wall -O2 -Os
+LDFLAGS =
 MULTIGEN = m68k-palmos-multigen
 
 LANGUAGE ?= german

@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.11 2003/07/22 19:14:35 tim Exp $
+/* $Id: mlfiles.c,v 1.12 2003/07/22 19:18:31 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -67,7 +67,7 @@ static MLfileInfo* FilesGetFile(UInt32 n) {
 static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **itemsText) {
   MLfileInfo *file;
   Char *name, *rate;
-  FontID oldFont;
+  FontID oldFont=stdFont;
 
   file = FilesGetFile(itemNum);
   if (file == NULL) return;
