@@ -1,4 +1,4 @@
-/* $Id: mltypes.h,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: mltypes.h,v 1.2 2003/07/16 16:45:08 tim Exp $
  *
  * Types for mldonkey conversation
  * Created: March 22th 2003
@@ -188,15 +188,6 @@ typedef struct {
 } MLinfo;
 
 typedef struct {
-  UInt32   num;
-  Boolean  enabled;
-  UInt64   uploaded;
-  UInt64   downloaded;
-  Char    *name;
-  Char    *configFile;
-} MLnetInfo;
-
-typedef struct {
   UInt32      file_num;
   UInt32      net_num;
   TNlist     *names;
@@ -220,6 +211,16 @@ typedef struct {
   Char *chunks;
   Char *availability;
 } MLchunkInfo;
+
+typedef struct {
+  UInt32      id;
+  Boolean     enabled;
+  MemHandle   name;
+  UInt64      uploaded;
+  UInt64      downloaded;
+} MLnetInfo;
+
+
 
 
 typedef UInt8 MLcallbackID;

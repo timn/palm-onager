@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.4 2003/07/10 22:57:29 tim Exp $
+/* $Id: mlfiles.c,v 1.5 2003/07/16 16:45:08 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -18,8 +18,9 @@ ProgressStatus gMLfilesProgStat;
 ProgressType *gMLfilesProgress=NULL;
 MLchunkInfo gMLfilesChunkInfo;
 Char *gMLfilesStrings[MLFILES_NUM_STRINGS];
+UInt8 gMLfilesMode=MLFILES_DING;
 
-void FilesFree(void) {
+static void FilesFree(void) {
   TNlist *tmpList = gMLfilesList;
   UInt8 i;
 
@@ -72,18 +73,50 @@ static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **items
 }
 
 
+/* THIS IS BadCode(TM)! Better solutions welcome */
+#define FILES_STRING_LEN 20
+static void FilesFloatToString(FlpCompDouble f, Char *dst, Char *add) {
+  Char *tmp1, *tmp2, *tmp3;
+  UInt32 mantissa;
+  Int16 exponent, sign;
+
+  tmp1 = MemPtrNew(FILES_STRING_LEN);
+  tmp2 = MemPtrNew(FILES_STRING_LEN);
+  tmp3 = MemPtrNew(FILES_STRING_LEN);
+  MemSet(dst, FILES_STRING_LEN, 0);
+  MemSet(tmp1, FILES_STRING_LEN, 0);
+  MemSet(tmp2, FILES_STRING_LEN, 0);
+  MemSet(tmp3, FILES_STRING_LEN, 0);
+
+  FlpBase10Info(f.fd, &mantissa, &exponent, &sign);
+
+  StrIToA(tmp1, mantissa);
+  StrNCopy(tmp2, tmp1, StrLen(tmp1)+exponent);
+  StrNCopy(tmp3, tmp1+StrLen(tmp1)+exponent, 1);
+  // We want at least one digit
+  if (StrLen(tmp3) == 0)  StrCopy(tmp3, "0");
+  if (StrLen(tmp2) == 0)  StrCopy(tmp2, "0");
+
+  StrPrintF(dst, "%s.%s %s", tmp2, tmp3, add);
+  
+  MemPtrFree(tmp1);
+  MemPtrFree(tmp2);
+  MemPtrFree(tmp3);
+}
+
+
 static void FilesUpdate(UInt16 n) {
   MLfileInfo *file = FilesGetFile(n);
-  Char *name, *chunks, *availability, *tmp, *tmp2, *tmp3;
+  Char *name, *chunks, *availability, *tmp;
   ControlType *ctl=TNGetObjectPtr(FILES_trigger);
   RectangleType list_bounds;
   FormType *frm=FrmGetActiveForm();
   UInt16 numChars = 0;
-  FlpCompDouble rate;
-  UInt32 mantissa;
-  Int16 exponent, sign;
+  FlpCompDouble f;
+  MLnetInfo *net;
 
   if (! file)  return;
+  //FrmCustomAlert(ALERT_debug, "FilesUpdate", "", "");
 
   /* Trigger text */
   FrmGetObjectBounds(frm, FrmGetObjectIndex(frm, FILES_list), &list_bounds);
@@ -133,6 +166,7 @@ static void FilesUpdate(UInt16 n) {
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
   // Size
   if (gMLfilesStrings[MLFILES_SIZE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_SIZE]);
   gMLfilesStrings[MLFILES_SIZE] = MemPtrNew(NET_TRAFFIC_MAXLEN);
@@ -150,39 +184,44 @@ static void FilesUpdate(UInt16 n) {
   // Download rate
   if (gMLfilesStrings[MLFILES_RATE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_RATE]);
   tmp = MemHandleLock(file->download_rate);
-  FlpBufferAToF(&rate.fd, tmp);
-  rate.d /= 1024;
+  FlpBufferAToF(&f.fd, tmp);
+  f.d /= 1024;
   MemHandleUnlock(file->download_rate);
-
-  gMLfilesStrings[MLFILES_RATE] = MemPtrNew(20);
-  tmp = MemPtrNew(20);
-  tmp2 = MemPtrNew(20);
-  MemSet(gMLfilesStrings[MLFILES_RATE], 20, 0);
-  MemSet(tmp2, 20, 0);
-
-  FlpBase10Info(rate.fd, &mantissa, &exponent, &sign);
-
-  StrIToA(tmp, mantissa);
-  StrNCopy(tmp2, tmp, StrLen(tmp)+exponent);
-  tmp3 = tmp;
-  StrNCopy(tmp3, tmp+StrLen(tmp)+exponent, 1);;
-  if (StrLen(tmp3) == 0) {
-    // We want at least one digit, string is 20 long, so there should be plenty
-    // of space...
-    StrCopy(tmp3, "0");
-  }
-
-  StrPrintF(gMLfilesStrings[MLFILES_RATE], "%s.%s", tmp2, tmp3);
-  
-  FrmCustomAlert(ALERT_debug, gMLfilesStrings[MLFILES_RATE], " - ", tmp2);
-  MemPtrFree(tmp);
-  MemPtrFree(tmp2);
-  // StrIToA(gMLfilesStrings[MLFILES_RATE], exponent);
-
+  gMLfilesStrings[MLFILES_RATE] = MemPtrNew(FILES_STRING_LEN);
+  FilesFloatToString(f, gMLfilesStrings[MLFILES_RATE], "KB/s");
   ctl = TNGetObjectPtr(FILES_rate);
   CtlSetLabel(ctl, gMLfilesStrings[MLFILES_RATE]);
 
-  
+  // Percent Done
+  if (gMLfilesStrings[MLFILES_DONE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_DONE]);
+  f.d = file->downloaded;
+  f.d /= file->size;
+  f.d *= 100;
+  gMLfilesStrings[MLFILES_DONE] = MemPtrNew(FILES_STRING_LEN);
+  FilesFloatToString(f, gMLfilesStrings[MLFILES_DONE], "%");
+  ctl = TNGetObjectPtr(FILES_done);
+  CtlSetLabel(ctl, gMLfilesStrings[MLFILES_DONE]);
+
+  // Network Name
+  if (gMLfilesStrings[MLFILES_NET] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_NET]);
+  net = MLgetNetworkByID(file->net_num);
+  if (! net) {
+    FrmCustomAlert(ALERT_debug, "Network not found", "", "");
+    FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net_label));
+    FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
+  } else {
+    tmp = MemHandleLock(net->name);
+    FrmCustomAlert(ALERT_debug, tmp, "", "");
+    gMLfilesStrings[MLFILES_NET] = MemPtrNew(StrLen(tmp)+1);
+    MemSet(gMLfilesStrings[MLFILES_NET], StrLen(tmp)+1, 0);
+    StrNCopy(gMLfilesStrings[MLFILES_NET], tmp, StrLen(tmp));
+    MemHandleUnlock(net->name);
+    ctl = TNGetObjectPtr(FILES_net);
+    CtlSetLabel(ctl, gMLfilesStrings[MLFILES_NET]);
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_net));
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_net_label));
+  }
+
   
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
@@ -200,6 +239,7 @@ static void FilesFinished(void) {
   ControlType *ctl;
   FormType *frm;
 
+  //FrmCustomAlert(ALERT_debug, "FilesFinished", "", "");
   PrgStopDialog(gMLfilesProgress, true);
   NetTrafficEnable();
 
@@ -225,7 +265,6 @@ static void FilesFinished(void) {
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
-  
 }
 
 
@@ -268,6 +307,8 @@ static void FilesFormInit(FormType *frm) {
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net_label));
 
   FrmDrawForm (frm);
 
@@ -280,6 +321,11 @@ static void FilesFormInit(FormType *frm) {
   gMLfilesProgress = PrgStartDialog("Downloading file list", FilesProgress, &gMLfilesProgStat);
   PrgUpdateDialog (gMLfilesProgress, 0, 1, NULL, true);
   MLrequest(GetDownloadFiles);
+}
+
+
+void FilesSetMode(UInt8 newMode) {
+  gMLfilesMode = newMode;
 }
 
 

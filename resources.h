@@ -1,4 +1,4 @@
-/* $Id: resources.h,v 1.2 2003/07/10 10:01:47 tim Exp $
+/* $Id: resources.h,v 1.3 2003/07/16 16:45:08 tim Exp $
  *
  * ID's for use in ressource definitions
  *
@@ -50,6 +50,8 @@
 #define FILES_rate_label 1042
 #define FILES_done 1043
 #define FILES_done_label 1044
+#define FILES_net 1045
+#define FILES_net_label 1046
 
 #define MENU_main 2000
 #define MENUITEM_about 2001

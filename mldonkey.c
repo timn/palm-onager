@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: mldonkey.c,v 1.2 2003/07/16 16:45:08 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -19,6 +19,7 @@ Boolean gMLprocessLocked=true;
 MLcallbackID gMLstatsFooterCbID, gMLfilesFooterCbID;
 MLcoreCode gMLopcode=0;
 UInt32 gMLsize = 0;
+TNlist *gMLnetworks=NULL;
 
 
 void MLreadDiscard(UInt32 size) {
@@ -143,6 +144,20 @@ return err;
 
 Err MLread_UInt8(UInt8 *ui8) {
   return MLreadBytesIntoBuffer((Char *)ui8, sizeof(UInt8));
+}
+
+Err MLread_Bool(Boolean *boole) {
+  UInt8 ui8;
+  Err err;
+  if ((err = MLreadBytesIntoBuffer((Char *)&ui8, sizeof(UInt8))) == errNone) {
+    if (ui8) {
+    *boole = 1;
+    } else {
+      *boole = 0;
+    }
+  }
+
+  return err;
 }
 
 Err MLread_UInt16(UInt16 *ui16) {
@@ -329,6 +344,28 @@ void MLrequest(MLguiCode opcode) {
 
 
 
+MLnetInfo* MLgetNetworkByID(UInt32 id) {
+  TNlist *tmpList = gMLnetworks;
+
+  while (tmpList) {
+    MLnetInfo *net=(MLnetInfo *)tmpList->data;
+    Char *tmp = MemHandleLock(net->name);
+    FrmCustomAlert(ALERT_debug, "Network search: ", tmp, "");
+    MemHandleUnlock(net->name);
+    if (net->id == id) {
+      break;
+    }
+    tmpList = tmpList->next;
+  }
+
+  if (tmpList) {
+    return (MLnetInfo *)tmpList->data;
+  } else {
+    return NULL;
+  }
+}
+
+
 
 Boolean MLsocketOpen(NetSocketRef socket, Err *err) {
   NetFDSetType readFDs, writeFDs, exceptFDs;
@@ -415,12 +452,25 @@ Err MLsocket(MLconfig *config, NetSocketRef *socket) {
 
 Err MLdisconnect(void) {
   Err err;
+  TNlist *tmpList;
+
   NetLibSocketClose(gNetReference, gMLsocket, gMLtimeout, &err);
   gMLconfig->connected = false;
   MLcallbackUnregister(gMLstatsFooterCbID);
   MLcallbackUnregister(gMLfilesFooterCbID);
-  while (gMLprocessLocked) {}
+  while (gMLprocessLocked) { sleep(1); }
   gMLprocessLocked=true;
+
+  tmpList = gMLnetworks;
+  while (tmpList) {
+    MLnetInfo *net = (MLnetInfo *)tmpList->data;
+    MemHandleFree(net->name);
+    MemPtrFree(net);
+    tmpList = tmpList->next;
+  }
+  TNlistFree(gMLnetworks);
+  gMLnetworks = NULL;
+
   return err;
 }
 
@@ -467,7 +517,28 @@ Err MLconnect(MLconfig *config) {
 
     while (MLdataWaiting(&bytes, &opcode)) {
       // We do not (yet?) care about these...
-      MLreadDiscard(bytes+sizeof(MLmsgHead));
+      if (opcode == Network_info) {
+        MLnetInfo *net = MemPtrNew(sizeof(MLnetInfo));
+        UInt16 tmp16;
+
+        MLreadHead(&bytes, &opcode);
+
+        MLread_UInt32(&net->id);
+        net->name = MemHandleNew(20);
+        MLread_String(&net->name);
+        MLread_Bool(&net->enabled);
+
+        MLread_UInt16(&tmp16);
+        MLreadDiscard(tmp16);
+
+        MLread_UInt64(&net->uploaded);
+        MLread_UInt64(&net->downloaded);
+
+        TNlistAppend(gMLnetworks, net);
+
+      } else {
+        MLreadDiscard(bytes+sizeof(MLmsgHead));
+      }
       //MLread(&bytes, &opcode, &m);
 
 #ifdef MLDEBUG_MOTD
