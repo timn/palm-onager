@@ -81,10 +81,10 @@ install: clean all
 	PILOTRATE=$(PILOTRATE) $(PILOTXFER) -i $(PROGNAME).prc
 
 clean:
-	-rm -f $(PROGNAME) $(PROGNAME).prc *.o *.bin *.ld *.s
+	-rm -f $(PROGNAME) $(PROGNAME).prc *.o *.bin *.ld *.s *.pws
 
-dist:
-	mkdir -p $(PROGNAME)-$(VERSION)_dist
+dist: clean
+	./packsource.sh
 	for L in $(LANGUAGES); do LANGUAGE=$$L $(MAKE) package; done
 	mv -f $(PROGNAME)-$(VERSION)-* $(PROGNAME)-$(VERSION)_dist
 
@@ -101,6 +101,7 @@ package: clean all
 upload: dist
 	scp -r $(PROGNAME)-$(VERSION)_dist $(SSH_USER)@$(SSH_HOST):$(SSH_PATH)
 	scp -r webpage/* $(SSH_USER)@$(SSH_HOST):$(SSH_PATH)
+	rm -rf $(PROGNAME)-$(VERSION)_dist
 
 status:
 	cvs status | grep File | grep -v Up-to-date
