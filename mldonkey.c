@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.6 2003/07/22 18:08:30 tim Exp $
+/* $Id: mldonkey.c,v 1.7 2003/07/22 19:14:35 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -541,6 +541,7 @@ static void MLbadPassCb(MLcoreCode opc, UInt32 dataSize) {
 }
 
 static Boolean MLconnectProgress(PrgCallbackDataPtr cbP) {
+  Char *string;
 
   if (cbP->stage == 0)  return true;
 
@@ -553,14 +554,11 @@ static Boolean MLconnectProgress(PrgCallbackDataPtr cbP) {
 
   switch (cbP->stage) {
     case 1:
-      StrCopy(cbP->textP, "Establishing connection...");
-      break;
     case 2:
-      StrCopy(cbP->textP, "Authenticating on server...");
-      break;
     case 3:
-      StrCopy(cbP->textP, "Login successful");
-      cbP->delay=true;
+      string = TNGetLockedString(PROGRESS_conn_title+cbP->stage);
+      StrCopy(cbP->textP, string);
+      MemPtrUnlock(string);
       break;
     default:
       StrCopy(cbP->textP, "Unknown stage");
@@ -575,14 +573,18 @@ static Boolean MLconnectProgress(PrgCallbackDataPtr cbP) {
 
 Err MLconnect(MLconfig *config) {
   Err err=errNone;
+  Char *string;
 
   gMLprocessLocked=true;
+  NetTrafficStart();
+  NetTrafficDisable();
 
   if (config != NULL) gMLconfig = config;
 
-  NetTrafficDisable();
-  gMLconnectProgress = PrgStartDialog("Connecting", MLconnectProgress, NULL);
+  string = TNGetLockedString(PROGRESS_conn_title);
+  gMLconnectProgress = PrgStartDialog(string, MLconnectProgress, NULL);
   PrgUpdateDialog(gMLconnectProgress, errNone, 1, NULL, true);
+  MemPtrUnlock(string);
 
   if ( ((err = MLsocket(gMLconfig, &gMLsocket)) == errNone) &&
        MLsocketIsOpen(gMLsocket, &err) ) {
@@ -600,7 +602,8 @@ Err MLconnect(MLconfig *config) {
     MLcallbackRegister(BadPassword, &gMLbadPassCbID, MLbadPassCb);
 
   } else {
-    FrmCustomAlert(ALERT_debug, "Could not connect. Maybe your IP is not allowed to connect?", "", "");
+    PrgStopDialog(gMLconnectProgress, true);
+    FrmAlert(ALERT_cantconnect);
   }
 
   gMLprocessLocked=false;

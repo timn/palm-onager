@@ -1,17 +1,19 @@
-/* $Id: form_files.rcp.in,v 1.5 2003/07/19 15:06:04 tim Exp $
+/* $Id: form_files.rcp.in,v 1.6 2003/07/22 19:14:35 tim Exp $
  *
  * Form to display file information
  */
 
 #include "resources.h"
 
-string id FILES_string_ding "Downloading"
-string id FILES_string_dled "Downloaded"
+##TRANSLATION##
+
+string id FILES_string_ding "files_title_ding"
+string id FILES_string_dled "files_title_dled"
 
 form id FILES_form at (0 0 160 160)
 menuid MENU_main
 begin
-  title "Files"
+  title "files_title"
 
   button "" id FILES_disco at (100 1 11 11) noframe graphical bitmapid BITMAP_disconnect selectedbitmapid BITMAP_disconnect_clicked
   button "" id FILES_ding at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
@@ -23,24 +25,24 @@ begin
   popuptrigger "" id FILES_trigger at (prevleft prevtop 152 auto) font 0 usable leftanchor
 
 
-  label "Size" id FILES_size_label at (2 prevbottom+10) font 1
-  label "123.4 MB" id FILES_size at (30 prevtop)
+  label "files_size" id FILES_size_label at (2 prevbottom+10) font 1
+  label "123.4 MB" id FILES_size at (40 prevtop)
 
-  label "DLed" id FILES_dled_label at (80 prevtop) font 1
-  label "123.3 MB" id FILES_dled at (110 prevtop)
+  label "files_dled" id FILES_dled_label at (90 prevtop) font 1
+  label "123.3 MB" id FILES_dled at (120 prevtop)
 
-  label "Rate" id FILES_rate_label at (2 prevbottom+6) font 1
-  label "0.1 KB/s" id FILES_rate at (30 prevtop)
+  label "files_rate" id FILES_rate_label at (2 prevbottom+6) font 1
+  label "0.1 KB/s" id FILES_rate at (40 prevtop)
 
-  label "Done" id FILES_done_label at (80 prevtop) font 1
-  label "99.9 %" id FILES_done at (110 prevtop)
-
-
-  label "No files in this view" id FILES_nofiles at (center prevtop) font 1 usable
+  label "files_done" id FILES_done_label at (90 prevtop) font 1
+  label "99.9 %" id FILES_done at (120 prevtop)
 
 
-  label "Net" id FILES_net_label at (2 prevbottom+6) font 1
-  label "Donkey" id FILES_net at (30 prevtop)
+  label "files_nofiles" id FILES_nofiles at (center prevtop) font 1 usable
+
+
+  label "files_net" id FILES_net_label at (2 prevbottom+6) font 1
+  label "Donkey" id FILES_net at (40 prevtop)
 
   gadget id FILES_GADGET_chunks at (1 120 158 18)
 

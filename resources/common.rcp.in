@@ -1,4 +1,4 @@
-/* $Id: common.rcp.in,v 1.3 2003/07/17 00:22:13 tim Exp $
+/* $Id: common.rcp.in,v 1.4 2003/07/22 19:14:35 tim Exp $
  *
  * common stuff like menus, bitmaps, alerts
  */
@@ -79,3 +79,24 @@ begin
   message "al_pwd2"
   buttons "al_ok"
 end
+
+alert id ALERT_cantconnect
+error
+begin
+  title "al_nocon1"
+  message "al_nocon2"
+  buttons "al_ok"
+end
+
+
+/* progress messages */
+string id PROGRESS_conn_title "connprog_title"
+string id PROGRESS_conn_est "connprog_est"
+string id PROGRESS_conn_auth "connprog_auth"
+string id PROGRESS_conn_succ "connprog_succ"
+
+string id PROGRESS_files_title "filesprog_title"
+string id PROGRESS_files_req "filesprog_req"
+string id PROGRESS_files_work "filesprog_work"
+string id PROGRESS_files_done "filesprog_done"
+string id PROGRESS_files_fallback "filesprog_fallback"

@@ -1,21 +1,23 @@
-/* $Id: form_main.rcp.in,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: form_main.rcp.in,v 1.2 2003/07/22 19:14:35 tim Exp $
  *
  * Main form
  */
 
 #include "resources.h"
 
+##TRANSLATION##
+
 form id FORM_main at (0 0 160 160)
 menuid MENU_main
 begin
-  title "Uni Donkey"
-  label "Port" autoid at (130 25) font 1
-  label "Host" autoid at (5 prevtop) font 1
+  title "main_title"
+  label "main_port" autoid at (130 25) font 1
+  label "main_host" autoid at (5 prevtop) font 1
   field id FIELD_host at (prevleft prevbottom 120 auto) underlined maxchars 32
   field id FIELD_port at (130 prevtop 25 auto) underlined maxchars 5 numeric
-  label "User" autoid at (5 prevbottom+6) font 1
+  label "main_user" autoid at (5 prevbottom+6) font 1
   field id FIELD_user at (prevleft prevbottom 150 auto) underlined maxchars 32
-  label "Password" autoid at (prevleft prevbottom+4) font 1
+  label "main_pass" autoid at (prevleft prevbottom+4) font 1
   field id FIELD_pass at (prevleft prevbottom 150 auto) underlined maxchars 32
-  button "Connect" id BUTTON_connect at (prevleft prevbottom+10 auto auto)
+  button "main_conn" id BUTTON_connect at (prevleft prevbottom+10 auto auto)
 end

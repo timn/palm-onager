@@ -1,4 +1,4 @@
-/* $Id: resources.h,v 1.5 2003/07/19 15:06:04 tim Exp $
+/* $Id: resources.h,v 1.6 2003/07/22 19:14:35 tim Exp $
  *
  * ID's for use in ressource definitions
  *
@@ -67,6 +67,18 @@
 #define ALERT_noNet 4003
 #define ALERT_iff 4004
 #define ALERT_pass 4005
+#define ALERT_cantconnect 4006
+
+
+#define PROGRESS_conn_title 4500
+#define PROGRESS_conn_est 4501
+#define PROGRESS_conn_auth 4502
+#define PROGRESS_conn_succ 4503
+#define PROGRESS_files_title 4504
+#define PROGRESS_files_req 4505
+#define PROGRESS_files_work 4506
+#define PROGRESS_files_done 4507
+#define PROGRESS_files_fallback 4508
 
 
 #define BITMAP_net 5001

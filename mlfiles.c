@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.10 2003/07/22 18:42:09 tim Exp $
+/* $Id: mlfiles.c,v 1.11 2003/07/22 19:14:35 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -292,6 +292,7 @@ static void FilesFinished(void) {
 
 static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   ProgressStatus *p=(ProgressStatus *)cbP->userDataP;
+  Char *tmp;
 
   if (cbP->stage == 0)  return true;
 
@@ -303,13 +304,24 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   MemSet(cbP->textP, cbP->textLen, 0);
 
   if (cbP->stage == 1) {
-    StrCopy(cbP->textP, "Requested file list from server\nWaiting for response");
+    tmp = TNGetLockedString(PROGRESS_files_req);
+    StrCopy(cbP->textP, tmp);
+    MemPtrUnlock(tmp);
   } else if ((p != NULL) && (p->current == p->max)) {
-    StrPrintF(cbP->textP, "Download done.\n%u file specs received", p->max);
+    tmp = TNGetLockedString(PROGRESS_files_done);
+    StrPrintF(cbP->textP, tmp, p->max);
+    MemPtrUnlock(tmp);
     cbP->delay=true;
   } else {
-    if (p != NULL) StrPrintF(cbP->textP, "Downloading file list...\nWorking on %u of %u", p->current, p->max);
-    else StrCopy(cbP->textP, "Downloading file list...");
+    if (p != NULL) {
+      tmp = TNGetLockedString(PROGRESS_files_work);
+      StrPrintF(cbP->textP, tmp, p->current, p->max);
+      MemPtrUnlock(tmp);
+    } else {
+      tmp = TNGetLockedString(PROGRESS_files_fallback);
+      StrCopy(cbP->textP, tmp);
+      MemPtrUnlock(tmp);
+    }
 
     if (cbP->message != NULL) StrNCat(cbP->textP, cbP->message, cbP->textLen-1);
   }
@@ -320,7 +332,6 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
 }
 
 static void FilesFormInit(FormType *frm) {
-  MemHandle m;
   Char *tmp, *tmp2;
 
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
@@ -340,12 +351,11 @@ static void FilesFormInit(FormType *frm) {
   FrmDrawForm(frm);
   FilesFree();
 
-  m = DmGetResource(strRsc, FILES_string_ding+gMLfilesMode);
-  tmp = MemHandleLock(m);
+  tmp = TNGetLockedString(FILES_string_ding+gMLfilesMode);
   tmp2 = MemPtrNew(StrLen(tmp)+1);
   MemSet(tmp2, StrLen(tmp)+1, 0);
   StrNCopy(tmp2, tmp, StrLen(tmp));
-  MemHandleUnlock(m);
+  MemPtrUnlock(tmp);
   FrmSetTitle(frm, tmp2);
   if (gMLfilesStrings[MLFILES_TITL] != NULL)  MemPtrFree(gMLfilesStrings[MLFILES_TITL]);
   gMLfilesStrings[MLFILES_TITL] = tmp2;
@@ -356,7 +366,9 @@ static void FilesFormInit(FormType *frm) {
 
   NetTrafficStart();
   NetTrafficDisable();
-  gMLfilesProgress = PrgStartDialog("Downloading file list", FilesProgress, &gMLfilesProgStat);
+  tmp = TNGetLockedString(PROGRESS_files_title);
+  gMLfilesProgress = PrgStartDialog(tmp, FilesProgress, &gMLfilesProgStat);
+  MemPtrUnlock(tmp);
   PrgUpdateDialog(gMLfilesProgress, 0, 1, NULL, true);
 
   if (gMLfilesMode == MLFILES_DING) {

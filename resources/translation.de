@@ -1,4 +1,4 @@
-/* $Id: translation.de,v 1.1 2003/07/09 12:05:16 tim Exp $ */
+/* $Id: translation.de,v 1.2 2003/07/22 19:14:35 tim Exp $ */
 
 translation "german"
 begin
@@ -32,6 +32,48 @@ begin
   "ab_d1" = "Palm Frontend"
   "ab_d2" = "für mldonkey"
   "ab_get" = "Neueste Version auf"
+
+
+/* Main form */
+  "main_title" = "Uni Donkey"
+  "main_port" = "Port"
+  "main_host" = "Server"
+  "main_user" = "Benutzer"
+  "main_pass" = "Passwort"
+  "main_conn" = "Verbinden"
+
+
+/* Files Form */
+  "files_title_ding" = "Downloads"
+  "files_title_dled" = "Fertige Dlds"
+  "files_size" = "Größe"
+  "files_dled" = "Gel."
+  "files_rate" = "Rate"
+  "files_done" = "Fert."
+  "files_nofiles" = "Keine Dateien in dieser Ansicht"
+  "files_net" = "Netz"
+
+
+/* Stats form */
+  "stats_title" = "Stats"
+  "stats_dled" = "Runtergeladen"
+  "stats_uped" = "Hochgeladen"
+
+
+/* Connect progress */
+  "connprog_title" = "Verbinde"
+  "connprog_est" = "Baue Verbindung auf..."
+  "connprog_auth" = "Authentifiziere an Server..."
+  "connprog_succ" = "Login erfolgreich"
+
+
+/* Files list fetch progress */
+  "filesprog_title" = "Hole Dateiliste"
+  "filesprog_req" = "Dateiliste angefordert\nWarte auf Antwort"
+  /* Format: Working on %u of %u, %u will be replaced with numbers */
+  "filesprog_work" = "Hole Dateiliste...\nErhalte %u von %u"
+  "filesprog_done" = "Download fertig.\n%u Dateiinformationen erhalten"
+  "filesprog_fallback" = "Hole Dateiliste"
 
 
 end
