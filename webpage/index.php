@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: index.php,v 1.7 2003/11/04 12:30:42 tim Exp $ */
+/* $Id: index.php,v 1.8 2004/01/05 23:30:46 tim Exp $ */
 
 $title="niemueller.de - palm software - Onager";
 $meta_desc="MLdonkey GUI for your PalmOS handheld.";
@@ -14,6 +14,7 @@ $languages=array( "de" => "German/Deutsch",
                   "en" => "English",
                 );
 
+count_page("onager");
 heading_lastmod();
 heading("Onager", "MLdonkey GUI for your PalmOS handheld",
         "/software/palm/onager/onager_big.png");
