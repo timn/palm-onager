@@ -1,4 +1,4 @@
-/* $Id: resources.h,v 1.7 2003/07/23 22:20:42 tim Exp $
+/* $Id: resources.h,v 1.8 2003/07/24 21:32:29 tim Exp $
  *
  * ID's for use in ressource definitions
  *
@@ -56,6 +56,7 @@
 #define FILES_string_ding 1048
 #define FILES_string_dled 1049
 #define FILES_nofiles 1050
+#define FILES_commit 1051
 
 
 #define MENU_main 2000

@@ -1,4 +1,4 @@
-/* $Id: translation.de,v 1.3 2003/07/23 22:20:42 tim Exp $ */
+/* $Id: translation.de,v 1.4 2003/07/24 21:32:29 tim Exp $ */
 
 translation "german"
 begin
@@ -53,6 +53,7 @@ begin
   "files_done" = "Fert."
   "files_nofiles" = "Keine Dateien in dieser Ansicht"
   "files_net" = "Netz"
+  "files_commit" = "Commit"
 
 
 /* Stats form */

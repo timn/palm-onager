@@ -1,4 +1,4 @@
-/* $Id: form_files.rcp.in,v 1.6 2003/07/22 19:14:35 tim Exp $
+/* $Id: form_files.rcp.in,v 1.7 2003/07/24 21:32:29 tim Exp $
  *
  * Form to display file information
  */
@@ -13,7 +13,7 @@ string id FILES_string_dled "files_title_dled"
 form id FILES_form at (0 0 160 160)
 menuid MENU_main
 begin
-  title "files_title"
+  title "files_ding"
 
   button "" id FILES_disco at (100 1 11 11) noframe graphical bitmapid BITMAP_disconnect selectedbitmapid BITMAP_disconnect_clicked
   button "" id FILES_ding at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
@@ -43,6 +43,8 @@ begin
 
   label "files_net" id FILES_net_label at (2 prevbottom+6) font 1
   label "Donkey" id FILES_net at (40 prevtop)
+
+  button "files_commit" id FILES_commit at (2 100 auto auto) nonusable
 
   gadget id FILES_GADGET_chunks at (1 120 158 18)
 

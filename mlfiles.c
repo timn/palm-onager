@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.13 2003/07/23 22:20:42 tim Exp $
+/* $Id: mlfiles.c,v 1.14 2003/07/24 21:32:29 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -67,19 +67,37 @@ static MLfileInfo* FilesGetFile(UInt32 n) {
 
 static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **itemsText) {
   MLfileInfo *file;
-  Char *name, *rate;
+  Char *name, *rate, *chunks, *availability;
   FontID oldFont=stdFont;
+  UInt16 i=0;
+  RGBColorType red={0x00, 0xFF, 0x00, 0x00}, old;
+  Boolean isRed=false;
 
   file = FilesGetFile(itemNum);
   if (file == NULL) return;
 
   name = MemHandleLock(file->name);
   rate = MemHandleLock(file->download_rate);
+  chunks = MemHandleLock(file->chunks);
+  availability = MemHandleLock(file->availability);
   if (StrCompare(rate, "0.0") != 0)  oldFont = FntSetFont(boldFont);
+  for (i=0; i < StrLen(chunks); ++i) {
+    // Determine if chunk not avail
+    if ( (chunks[i] != '2') && (availability[i] == 0) ) {
+      TNSetTextColorRGB(&red, &old);
+      isRed = true;
+      break;
+    }
+  }
   TNDrawCharsToFitWidth(name, bounds);
   if (StrCompare(rate, "0.0") != 0)  FntSetFont(oldFont);
+  if (isRed) {
+    TNSetTextColorRGB(&old, NULL);
+  }
   MemHandleUnlock(file->name);
   MemHandleUnlock(file->download_rate);
+  MemHandleUnlock(file->chunks);
+  MemHandleUnlock(file->availability);
 }
 
 
@@ -260,6 +278,12 @@ static void FilesUpdate(UInt16 n) {
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks));
 
+  if (file->state == Downloaded) {
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_commit));
+  } else {
+    FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_commit));
+  }
+
   // Draw the form to get data displayed
   FrmDrawForm(frm);
 
@@ -380,6 +404,20 @@ static void FilesFormInit(FormType *frm) {
 }
 
 
+static void FilesCommit(UInt16 fileIndex) {
+  MLfileInfo *file = FilesGetFile(fileIndex);
+
+  if (!file) return;
+
+  MLbuffer_create();
+  MLbuffer_append_UInt32(file->file_num);
+  MLbuffer_append_String(MemHandleLock(file->name));
+  MemHandleUnlock(file->name);
+  MLbuffer_write(SaveFile);
+
+}
+
+
 void FilesSetMode(UInt8 newMode) {
   gMLfilesMode = newMode;
 }
@@ -388,6 +426,7 @@ void FilesSetMode(UInt8 newMode) {
 Boolean FilesFormHandleEvent(EventType *event) {
   Boolean handled=false;
   FormType *frm=FrmGetActiveForm();
+  ListType *lst;
 
   
   if (event->eType == ctlSelectEvent) {
@@ -416,7 +455,14 @@ Boolean FilesFormHandleEvent(EventType *event) {
         FrmGotoForm(FORM_stats);
         handled = true;
         break;
-      
+
+      case FILES_commit:
+        FrmGotoForm(FILES_form);
+        lst = TNGetObjectPtr(FILES_list);
+        FilesCommit(LstGetSelection(lst));
+        break;
+        
+
       default:
         break;
     }
