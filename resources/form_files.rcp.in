@@ -1,4 +1,4 @@
-/* $Id: form_files.rcp.in,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: form_files.rcp.in,v 1.2 2003/07/10 10:01:47 tim Exp $
  *
  * Form to display file information
  */
@@ -10,14 +10,30 @@ menuid MENU_main
 begin
   title "Files"
 
-  button "" id FILES_ding at (100 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
+  button "" id FILES_disco at (100 1 11 11) noframe graphical bitmapid BITMAP_disconnect selectedbitmapid BITMAP_disconnect_clicked
+  button "" id FILES_ding at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
   button "" id FILES_ded at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloaded selectedbitmapid BITMAP_downloaded_clicked
 
-  list "" id FILES_list at (4 18 152 auto) visibleitems 3 nonusable
+  list "" id FILES_list at (4 20 152 auto) visibleitems 3 nonusable
   popuplist id FILES_trigger FILES_list
   popuptrigger "" id FILES_trigger at (prevleft prevtop 152 auto) font 0 usable leftanchor
 
-  gadget id FILES_GADGET_chunks at (2 prevbottom+5 156 16)
 
-  button "Disconnect" id FILES_disco at (5 130 auto auto)
+  label "Size" id FILES_size_label at (2 prevbottom+10) font 1
+  label "750.0M" id FILES_size at (30 prevtop)
+
+  label "DLed" id FILES_dled_label at (80 prevtop) font 1
+  label "345.2M" id FILES_dled at (110 prevtop)
+
+
+  label "Rate" id FILES_rate_label at (2 prevbottom+6) font 1
+  label "123.2" id FILES_rate at (30 prevtop)
+
+  label "Done" id FILES_done_label at (80 prevtop) font 1
+  label "17.9 %" id FILES_done at (110 prevtop)
+
+  gadget id FILES_GADGET_chunks at (2 120 156 16)
+
 end
+
+/*  button "Disconnect" id FILES_disco at (5 130 auto auto) */

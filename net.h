@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: net.h,v 1.2 2003/07/10 10:01:47 tim Exp $
  *
  * Network related functions
  * Created: March 12th 2003
@@ -21,7 +21,7 @@
 #define NET_BITMAP_HEIGHT 11
 
 #define NET_TRAFFICUNIT_MAXLEN 3
-
+#define NET_TRAFFIC_MAXLEN 10
 
 // define macros to convert numbers since dumb devers did not know what network
 // byte order looks like :-( That's pretty ugly since now you need to know which
@@ -54,5 +54,6 @@ extern void NetTrafficDisable(void);
 
 extern UInt8 NetUInt64ToBytes(UInt64 ui64, UInt32 *low, UInt32 *veryLow, Boolean swap);
 extern void NetTrafficUnit(Char *dst, UInt8 n);
+extern void NetTrafficStringFromBytes(UInt32 bytes, Char *dst);
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: mlchunks.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: mlchunks.c,v 1.2 2003/07/10 10:01:47 tim Exp $
  *
  * ML chunk gadget code
  * Created: April 10th 2003
@@ -104,98 +104,6 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
                            bounds.extent.y);
     WinDrawRectangle(&rect, 0);
   }
-  
-  
-/* OLD Code
-  
-    Char temp[100];
-
-  
-  while (len > bounds.extent.x) {
-    len /= 2;
-    chunksPerUnit *= 2;
-  }
-
-
-  c.r=255;
-  c.g=0;
-  c.b=0;
-
-  TNSetForeColorRGB(&c, &old);
-  WinDrawRectangle(&bounds, 0);
-  c.r = 0;
-  TNSetForeColorRGB(&c, NULL);
-  WinDrawRectangleFrame(simpleFrame, &bounds);
-  TNSetForeColorRGB(&old, NULL);
-
-  c.r=0;
-  c.g=0;
-  c.b=255;
-
-  TNSetForeColorRGB(&c, &old);
-
-  chunkWidth = (UInt16)(bounds.extent.x / len);
-  chunksWithExtra = bounds.extent.x - (len * chunkWidth);
-
-  StrPrintF(temp, "Len: %u, Width: %u, withExtra: %u, ex.x: %u", len, chunkWidth, chunksWithExtra, bounds.extent.x);
-  //FrmCustomAlert(ALERT_debug, temp, "", "");
-  
-  for (i=0; i < len; ++i) {
-    UInt8 numChunksDone=0;
-
-    for (j=0; j < chunksPerUnit; ++j) {
-      if (chunkInfo->chunks[(chunksPerUnit*i)+j] >= '1') {
-        numChunksDone += 1;
-      }
-    }
-
-    if (numChunksDone == chunksPerUnit) {
-      // Draw a "fully downloaded" chunk
-      RctSetRectangle(&rect, bounds.topLeft.x + (chunkWidth * i) + ((i < chunksWithExtra) ? 1 : 0) + min(i, chunksWithExtra),
-                             bounds.topLeft.y,
-                             chunkWidth + ((i < chunksWithExtra) ? 1 : 0),
-                             bounds.extent.y);
-      WinDrawRectangle(&rect, 0);
-      //StrPrintF(temp, "i: %u, X: %u, Y: %u, W: %u, H: %u", i, rect.topLeft.x, rect.topLeft.y, rect.extent.x, rect.extent.y);
-      //FrmCustomAlert(ALERT_debug, temp, "", "");
-    } else if ((chunksPerUnit == 2) && (i < chunksWithExtra)) {
-      // Special case.
-      // We had a size between extent.x and 2*extent.x. Now the chunks with extra line
-      // do not need horizontal splitting, they can be split vertically
-      //FrmCustomAlert(ALERT_debug, "Case 2", "", "");
-      RctSetRectangle(&rect, bounds.topLeft.x + (chunkWidth * i) + ((chunkInfo->chunks[(chunksPerUnit*i)] >= '1') ? 0 : 1) + min(i, chunksWithExtra),
-                             bounds.topLeft.y,
-                             1,
-                             bounds.extent.y);
-      WinDrawRectangle(&rect, 0);
-    } else if (numChunksDone > 0) {
-      // We have more chunks than two chunks per line and
-      // FrmCustomAlert(ALERT_debug, "Case 3", "", "");
-      if (((bounds.extent.y % chunksPerUnit) == 0) && (chunksPerUnit <= bounds.extent.y)) {
-        // we can easily divide
-        UInt16 vertChunkHeight, v;
-
-        vertChunkHeight = (UInt16)(bounds.extent.y / chunksPerUnit);
-
-        for (v=0; v < chunksPerUnit; ++v) {
-          if (chunkString[(chunksPerUnit*i)+v] == '1') {
-            RctSetRectangle(&rect, bounds.topLeft.x + (chunkWidth * i) + ((i < chunksWithExtra) ? 1 : 0) + min(i, chunksWithExtra),
-                                   bounds.topLeft.y + (vertChunkHeight * v),
-                                   chunkWidth + ((i < chunksWithExtra) ? 1 : 0),
-                                   vertChunkHeight);
-            WinDrawRectangle(&rect, 0);
-          }
-        }
-      } else {
-        RctSetRectangle(&rect, bounds.topLeft.x + (chunkWidth * i) + ((i < chunksWithExtra) ? 1 : 0) + min(i, chunksWithExtra),
-                               bounds.topLeft.y,
-                               chunkWidth + ((i < chunksWithExtra) ? 1 : 0),
-                               (UInt16)(bounds.extent.y / 2));
-        WinDrawRectangle(&rect, 0);
-      }
-    }
-  }
-*/
 
   // Restore old color
   TNSetForeColorRGB(&old, NULL);

@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: net.c,v 1.2 2003/07/10 10:01:47 tim Exp $
  *
  * Network related functions
  * Created: March 12th 2003
@@ -139,4 +139,20 @@ void NetTrafficUnit(Char *dst, UInt8 n) {
     return;
   }
   StrNCopy(dst, sizes[n], NET_TRAFFICUNIT_MAXLEN);
+}
+
+/* NOTE: sizeof(dst) = NET_TRAFFIC_MAXLEN */
+void NetTrafficStringFromBytes(UInt32 bytes, Char *dst) {
+  UInt8 n = 0;
+  UInt32 rest=0;
+  Char unit[NET_TRAFFICUNIT_MAXLEN];
+
+  while (bytes > 1000) {
+    rest = (bytes % 1000) / 100;
+    bytes /= 1024;
+    n += 1;
+  }
+
+  NetTrafficUnit(unit, n);
+  StrPrintF(dst, "%lu.%lu %s", bytes, rest, unit);
 }

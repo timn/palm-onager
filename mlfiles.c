@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: mlfiles.c,v 1.2 2003/07/10 10:01:47 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -17,9 +17,12 @@ Char *gMLfilesTrigger = NULL;
 ProgressStatus gMLfilesProgStat;
 ProgressType *gMLfilesProgress;
 MLchunkInfo gMLfilesChunkInfo;
+Char *gMLfilesStrings[MLFILES_NUM_STRINGS];
 
-void MLfilesFree(void) {
+void FilesFree(void) {
   TNlist *tmpList = gMLfilesList;
+  UInt8 i;
+
   while (tmpList != NULL) {
     MLfileInfo *file = (MLfileInfo *)tmpList->data;
     MemHandleFree(file->chunks);
@@ -37,6 +40,11 @@ void MLfilesFree(void) {
   if (gMLfilesChunkInfo.availability != NULL) {
     MemPtrFree(gMLfilesChunkInfo.availability);
     gMLfilesChunkInfo.availability = NULL;
+  }
+
+  if (gMLfilesStrings[i] != NULL) {
+    MemPtrFree(gMLfilesStrings[i]);
+    gMLfilesStrings[i] = NULL;
   }
 }
 
@@ -62,9 +70,9 @@ static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **items
 }
 
 
-static void FilesSetTriggerAndGadget(UInt16 n) {
+static void FilesUpdate(UInt16 n) {
   MLfileInfo *file = FilesGetFile(n);
-  Char *name, *chunks, *availability;
+  Char *name, *chunks, *availability, *tmp;
   ControlType *ctl=TNGetObjectPtr(FILES_trigger);
   RectangleType list_bounds;
   FormType *frm=FrmGetActiveForm();
@@ -114,21 +122,80 @@ static void FilesSetTriggerAndGadget(UInt16 n) {
   FrmSetGadgetData(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks), &gMLfilesChunkInfo);   
   FrmSetGadgetHandler(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks), MLchunkGadgetHandler);
 
-  FrmDrawForm(frm);
+  /* Set labels */
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
+
+  // Size
+  if (gMLfilesStrings[MLFILES_SIZE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_SIZE]);
+  gMLfilesStrings[MLFILES_SIZE] = MemPtrNew(NET_TRAFFIC_MAXLEN);
+  NetTrafficStringFromBytes(file->size, gMLfilesStrings[MLFILES_SIZE]);
+  ctl = TNGetObjectPtr(FILES_size);
+  CtlSetLabel(ctl, gMLfilesStrings[MLFILES_SIZE]);
+
+  // Downloaded
+  if (gMLfilesStrings[MLFILES_DLED] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_DLED]);
+  gMLfilesStrings[MLFILES_DLED] = MemPtrNew(NET_TRAFFIC_MAXLEN);
+  NetTrafficStringFromBytes(file->downloaded, gMLfilesStrings[MLFILES_DLED]);
+  ctl = TNGetObjectPtr(FILES_dled);
+  CtlSetLabel(ctl, gMLfilesStrings[MLFILES_DLED]);
+
+  // Download rate
+  if (gMLfilesStrings[MLFILES_RATE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_RATE]);
+  tmp = MemHandleLock(file->download_rate);
+  gMLfilesStrings[MLFILES_RATE] = MemPtrNew(StrLen(tmp)+1);
+  MemSet(tmp, StrLen(tmp)+1, 0);
+  FrmCustomAlert(ALERT_debug, tmp, "", "");
+  StrNCopy(gMLfilesStrings[MLFILES_RATE], tmp, StrLen(tmp));
+  MemHandleUnlock(file->download_rate);
+  ctl = TNGetObjectPtr(FILES_rate);
+  CtlSetLabel(ctl, gMLfilesStrings[MLFILES_RATE]);
   
+  
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
+  
+  // Draw the form to get data displayed
+  FrmDrawForm(frm);
+
 }
 
 
 static void FilesFinished(void) {
   ListType *lst;
   ControlType *ctl;
+  FormType *frm;
+
   PrgStopDialog(gMLfilesProgress, true);
   NetTrafficEnable();
+
   lst = TNGetObjectPtr(FILES_list);
   ctl = TNGetObjectPtr(FILES_trigger);
+  frm = FrmGetActiveForm();
+
+  //if (! gMLfilesNumFiles) {
+    // No files -> hide display items, show no data string
+
+
   LstSetListChoices(lst, NULL, gMLfilesNumFiles);
   LstSetDrawFunction(lst, FilesListDrawFunc);
-  FilesSetTriggerAndGadget(0);
+  LstSetHeight(lst, min(gMLfilesNumFiles, MLFILES_MAX_LISTHEIGHT));
+  FilesUpdate(0);
+
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled_label));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
+  
 }
 
 
@@ -160,6 +227,30 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   return true;
 }
 
+static void FilesFormInit(FormType *frm) {
+  frm = FrmGetActiveForm();
+
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled_label));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
+
+  FrmDrawForm (frm);
+
+  gMLfilesProgStat.max=1;
+  gMLfilesProgStat.current=0;
+
+  NetTrafficDisable();
+  gMLfilesProgress = PrgStartDialog("Downloading file list", FilesProgress, &gMLfilesProgStat);
+  PrgUpdateDialog (gMLfilesProgress, 0, 1, NULL, true);
+  MLrequest(GetDownloadFiles);
+}
+
 
 Boolean FilesFormHandleEvent(EventType *event) {
   Boolean handled=false;
@@ -175,12 +266,18 @@ Boolean FilesFormHandleEvent(EventType *event) {
         FrmGotoForm(FORM_main);
         handled = true;
         break;
+
+      case FILES_ding:
+        FilesFormInit(frm);
+        FilesFree();
+        handled = true;
+        break;
       
       default:
         break;
     }
   } else if (event->eType == popSelectEvent) {
-    FilesSetTriggerAndGadget(event->data.popSelect.selection);
+    FilesUpdate(event->data.popSelect.selection);
     handled = true;
   } else if (event->eType == menuEvent) {
     // forwarding of menu events
@@ -192,30 +289,11 @@ Boolean FilesFormHandleEvent(EventType *event) {
     handled = true;
   } else if (event->eType == frmOpenEvent) {
     // initializes and draws the form at program launch
-
-    frm = FrmGetActiveForm();
-    FrmDrawForm (frm);
-
-    gMLfilesProgStat.max=1;
-    gMLfilesProgStat.current=0;
-
-    gMLfilesProgress = PrgStartDialog("Downloading file list", FilesProgress, &gMLfilesProgStat);
-    PrgUpdateDialog (gMLfilesProgress, 0, 1, NULL, true);
-    NetTrafficDisable();
-    MLrequest(GetDownloadFiles);
-
-    /*
-    FrmSetGadgetData(frm, FrmGetObjectIndex(frm, STATS_GADGET_chunks), gChunkString);   
-    FrmSetGadgetHandler(frm, FrmGetObjectIndex(frm, STATS_GADGET_chunks), MLchunkGadgetHandler);
-    */
-
+    FilesFormInit(frm);
     handled = true;
   } else if (event->eType == frmCloseEvent) {
     // this is done if program is closed
-    if (gMLfilesTrigger != NULL) {
-      MemPtrFree(gMLfilesTrigger);
-      gMLfilesTrigger = NULL;
-    }
+    FilesFree();
   }
   
   return handled;

@@ -209,6 +209,12 @@ Messages from GUI to Core for protocol 0
 
 
 
+Messages from Core to GUI for protocol 0
+========================================
 
+DownloadFiles_v4
 
-
+There are two strings sent: the availability contains bytes, one
+per chunk, indicating the number of clients(0-255) having the
+chunk. The other one is the downloaded state for each chunk: 0=empty,
+1=partially downloaded, 2=downloaded, not verified, 3= downloaded verified.

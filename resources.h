@@ -1,4 +1,4 @@
-/* $Id: resources.h,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: resources.h,v 1.2 2003/07/10 10:01:47 tim Exp $
  *
  * ID's for use in ressource definitions
  *
@@ -42,7 +42,14 @@
 #define FILES_ding 1034
 #define FILES_ded 1035
 #define FILES_GADGET_chunks 1036
-
+#define FILES_size 1037
+#define FILES_size_label 1038
+#define FILES_dled 1039
+#define FILES_dled_label 1040
+#define FILES_rate 1041
+#define FILES_rate_label 1042
+#define FILES_done 1043
+#define FILES_done_label 1044
 
 #define MENU_main 2000
 #define MENUITEM_about 2001
@@ -67,3 +74,5 @@
 #define BITMAP_progress_start 5010
 #define BITMAP_progress_2 5011
 #define BITMAP_progress_3 5012
+#define BITMAP_disconnect 5013
+#define BITMAP_disconnect_clicked 5014
