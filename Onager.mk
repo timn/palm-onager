@@ -1,6 +1,6 @@
 VERSION=0.1
 PROGNAME=Onager
-PROGDESC=onager
+PROGDESC=Onager
 APPID=UDKY
 
 # If you use the upload target (we use scp)
