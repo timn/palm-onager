@@ -5,6 +5,11 @@
 
 === v0.1
 
+* Fri Jul 29 2003 Tim Niemueller <tim@niemueller.de>
+- Fixed issue with long chunk string files (BitTorrent files have those)
+- removed debug code, could not find the bug
+
+
 * Fri Jul 26 2003 Tim Niemueller <tim@niemueller.de>
 - read code now in own files to make find funcs faster in the code
 - fixed but in write code that caused junk to be transmitted
@@ -43,4 +48,4 @@
 - Dev Session at Tob. Created project on Medha's pushing
 
 
-$Id: CHANGES,v 1.6 2003/07/24 22:38:41 tim Exp $
+$Id: CHANGES,v 1.7 2003/07/29 20:32:18 tim Exp $
