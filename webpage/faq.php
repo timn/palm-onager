@@ -1,8 +1,8 @@
 <?php
 
-/* $Id: faq.php,v 1.1 2003/07/09 12:05:16 tim Exp $ */
+/* $Id: faq.php,v 1.2 2003/07/29 20:34:03 tim Exp $ */
 
-$title="niemueller.de - palm software - UniDonkey - FAQ";
+$title="niemueller.de - palm software - Onager - FAQ";
 $meta_desc="Palm GUI Frontend for the MLdonkey P2P network client";
 $meta_keyw="Palm, PalmOS, donkey, edonkey, fasttrack, mldonkey, gnutella, file sharing, peer";
 include("$DOCUMENT_ROOT/header.inc.php");
@@ -10,7 +10,7 @@ include("$DOCUMENT_ROOT/left.inc.php");
 
 box_begin("Uni Donkey", "Last modified ".date ("F d Y H:i:s.", getlastmod()));
 echo "<br/>";
-print_heading_customimage("Uni Donkey", "Palm GUI Frontend for the MLdonkey P2P network client",
+print_heading_customimage("Onager", "Palm GUI Frontend for the MLdonkey P2P network client",
                           "unidonkey_big.png", "index.php");
 ?>
 
