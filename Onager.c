@@ -1,4 +1,4 @@
-/* $Id: Onager.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: Onager.c,v 1.2 2003/07/22 17:59:09 tim Exp $
  *
  * UniDonkey main, event handling
  * Created: March 12th 2003
@@ -130,12 +130,10 @@ static Boolean MainFormHandleEvent (EventPtr event){
           tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_pass));
           if (tmp != NULL) StrNCopy(gMainMLconfig->password, tmp, ML_CONFIG_FIELD_MAXLEN);
 
-          if (MLconnect(gMainMLconfig) == errNone) {
-            FrmGotoForm(FORM_stats);
-          }
+          MLconnect(gMainMLconfig);
         }
         break;
-      
+
       default:
         break;
       }
