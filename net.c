@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.2 2003/07/10 10:01:47 tim Exp $
+/* $Id: net.c,v 1.3 2003/07/23 22:18:51 tim Exp $
  *
  * Network related functions
  * Created: March 12th 2003
@@ -64,10 +64,13 @@ return err;
 }
 
 Err NetTerm(void) {
-  NetLibClose(gNetReference, false);
+  if (gNetReference)  NetLibClose(gNetReference, false);
 
-  MemHandleUnlock(gNetBitmapHandle);
-  DmReleaseResource(gNetBitmapHandle);
+  if (gNetBitmapHandle != NULL) {
+    MemHandleUnlock(gNetBitmapHandle);
+    DmReleaseResource(gNetBitmapHandle);
+    gNetBitmapHandle = NULL;
+  }
 
 return errNone;
 }
