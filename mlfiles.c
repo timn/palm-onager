@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.17 2003/07/29 20:29:57 tim Exp $
+/* $Id: mlfiles.c,v 1.18 2003/07/29 20:41:14 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -518,7 +518,7 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     UInt32 tmp32=0;
     UInt16 tmp16=0, tmpNum=0, j=0;
     UInt8  tmp8=0;
-    Char temp[50];
+    // Char temp[50];
     MLfileInfo *file = MemPtrNew(sizeof(MLfileInfo));
     MemSet(file, MemPtrSize(file), 0);
 
