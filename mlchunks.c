@@ -1,4 +1,4 @@
-/* $Id: mlchunks.c,v 1.5 2003/07/17 00:20:59 tim Exp $
+/* $Id: mlchunks.c,v 1.6 2003/07/19 15:04:56 tim Exp $
  *
  * ML chunk gadget code
  * Created: April 10th 2003
@@ -69,9 +69,11 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
   len = StrLen(chunkInfo->chunks);
   FrmGetObjectBounds(frm, TNGetObjectIndexFromPtr(frm, gadget), &bounds);
 
+  RctSetRectangle(&bounds, bounds.topLeft.x+1, bounds.topLeft.y+1,
+                           bounds.extent.x-2, bounds.extent.y-2);
   WinSetForeColor(UIColorGetTableEntryIndex(UIObjectForeground));
   WinDrawRectangleFrame(simpleFrame, &bounds);
-  
+
   /* NEW code
    * Assumptions: NumberOfChunks <= GadgetWidth
    * If this is not the case nothing gets drawn. First I had it that much longer
