@@ -1,4 +1,4 @@
-/* $Id: mlchunks.c,v 1.2 2003/07/10 10:01:47 tim Exp $
+/* $Id: mlchunks.c,v 1.3 2003/07/10 15:07:02 tim Exp $
  *
  * ML chunk gadget code
  * Created: April 10th 2003
@@ -62,6 +62,7 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
   MLchunkInfo *chunkInfo=(MLchunkInfo *)gadget->data;
   UInt16 len, i;
   UInt16 chunksWithExtra = 0, chunkWidth=0;
+
   
   if (! chunkInfo->chunks || ! chunkInfo->availability)  return;
 
@@ -85,7 +86,6 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
   chunkWidth = (UInt16)(bounds.extent.x / len);
   chunksWithExtra = bounds.extent.x - (len * chunkWidth);
 
-  
   for (i=0; i < len; ++i) {
 
     // Determine color of chunk

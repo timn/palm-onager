@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.2 2003/07/10 10:01:47 tim Exp $
+/* $Id: mlfiles.c,v 1.3 2003/07/10 15:07:02 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -112,22 +112,23 @@ static void FilesUpdate(UInt16 n) {
   MemSet(gMLfilesChunkInfo.chunks, StrLen(chunks)+1, 0);
   StrNCopy(gMLfilesChunkInfo.chunks, chunks, StrLen(chunks));
 
-  gMLfilesChunkInfo.availability = MemPtrNew(StrLen(availability)+1);
-  MemSet(gMLfilesChunkInfo.availability, StrLen(availability)+1, 0);
-  StrNCopy(gMLfilesChunkInfo.availability, availability, StrLen(availability));
+  // DO NOT USE STRLEN! availability is not a string but more an array of
+  // chars, availability can be 0, C then interprets this as the end of the
+  // string...
+  gMLfilesChunkInfo.availability = MemPtrNew(MemHandleSize(file->availability));
+  MemSet(gMLfilesChunkInfo.availability, MemHandleSize(file->availability), 0);
+  StrNCopy(gMLfilesChunkInfo.availability, availability, MemHandleSize(file->availability));
 
-  MemHandleUnlock(file->chunks);
-  MemHandleUnlock(file->availability);
 
   FrmSetGadgetData(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks), &gMLfilesChunkInfo);   
   FrmSetGadgetHandler(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks), MLchunkGadgetHandler);
 
   /* Set labels */
+/*
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
-
   // Size
   if (gMLfilesStrings[MLFILES_SIZE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_SIZE]);
   gMLfilesStrings[MLFILES_SIZE] = MemPtrNew(NET_TRAFFIC_MAXLEN);
@@ -147,18 +148,17 @@ static void FilesUpdate(UInt16 n) {
   tmp = MemHandleLock(file->download_rate);
   gMLfilesStrings[MLFILES_RATE] = MemPtrNew(StrLen(tmp)+1);
   MemSet(tmp, StrLen(tmp)+1, 0);
-  FrmCustomAlert(ALERT_debug, tmp, "", "");
   StrNCopy(gMLfilesStrings[MLFILES_RATE], tmp, StrLen(tmp));
   MemHandleUnlock(file->download_rate);
   ctl = TNGetObjectPtr(FILES_rate);
   CtlSetLabel(ctl, gMLfilesStrings[MLFILES_RATE]);
   
-  
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
-  
+*/
+
   // Draw the form to get data displayed
   FrmDrawForm(frm);
 
