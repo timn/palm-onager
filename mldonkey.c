@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.12 2003/07/24 22:38:41 tim Exp $
+/* $Id: mldonkey.c,v 1.13 2003/07/27 22:48:41 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -51,7 +51,7 @@ Boolean MLdataWaiting(UInt32 *size, MLcoreCode *opcode) {
 Err MLsocketWrite(MLguiCode opcode, MemHandle *content, UInt32 contentSize) {
   Char *buffer;
   UInt32 toSent=0;
-  UInt16 sent;
+  Int16 sent;
   Err err=errNone;
   MLmsgHead head;
 
@@ -69,8 +69,10 @@ Err MLsocketWrite(MLguiCode opcode, MemHandle *content, UInt32 contentSize) {
     toSent = sizeof(MLmsgHead);
     while ((toSent > 0) && (err == errNone)) {
       sent = NetLibSend(gNetReference, gMLsocket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-      toSent -= sent;
-      buffer += sent;
+      if (sent != -1) {
+        toSent -= sent;
+        buffer += sent;
+      }
     }
 
     // Send data
@@ -79,8 +81,10 @@ Err MLsocketWrite(MLguiCode opcode, MemHandle *content, UInt32 contentSize) {
       toSent = contentSize;
       while ((toSent > 0) && (err == errNone)) {
         sent = NetLibSend(gNetReference, gMLsocket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-        toSent -= sent;
-        buffer += sent;
+        if (sent != -1) {
+          toSent -= sent;
+          buffer += sent;
+        }
       }
       MemHandleUnlock(*content);
     }
@@ -99,7 +103,8 @@ Err MLsocketWrite(MLguiCode opcode, MemHandle *content, UInt32 contentSize) {
 
 /* NOTE: The data MemHandle must already be resized! */
 Err MLsocketRead(MemHandle *data, UInt32 size) {
-  UInt16 recd=0, toRead=0;
+  UInt32 toRead=0;
+  Int16 recd=0;
   Char *buffer;
   Err err;
 
@@ -110,13 +115,15 @@ Err MLsocketRead(MemHandle *data, UInt32 size) {
     }
     buffer = MemHandleLock(*data);
     MemSet(buffer, size, 0);
-    
+
     toRead = size;
     err = errNone;
-    while ((toRead > 0) && (err == errNone)) {
+    while ((toRead > 0) && ((err == errNone) || (err == netErrTimeout))) {
       recd = NetLibReceive(gNetReference, gMLsocket, buffer, toRead, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-      toRead -= recd;
-      buffer += recd;
+      if (recd != -1) { // -1 on error
+        toRead -= recd;
+        buffer += recd;
+      }
     }
     MemHandleUnlock(*data);
   }
@@ -381,6 +388,9 @@ Err MLprocess(void) {
     UInt32 bytes;
 
     while (MLdataWaiting(&bytes, &opcode)) {
+      Char temp[50];
+      StrPrintF(temp, "O: %u B: %lu", opcode, bytes);
+      //FrmCustomAlert(ALERT_debug, temp, "", "");
       MLcallbackFindAndRun(opcode, bytes);
     }
   }

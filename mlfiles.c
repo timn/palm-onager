@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.15 2003/07/25 12:47:40 tim Exp $
+/* $Id: mlfiles.c,v 1.16 2003/07/27 22:48:42 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -331,16 +331,12 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   }
 
   MemSet(cbP->textP, cbP->textLen, 0);
-  StrPrintF(cbP->textP, "%u", cbP->stage);
-    FrmCustomAlert(ALERT_debug, "Update Progress: ", cbP->textP, "");
-  MemSet(cbP->textP, cbP->textLen, 0);
 
   if (cbP->stage == 1) {
     tmp = TNGetLockedString(PROGRESS_files_req);
     StrCopy(cbP->textP, tmp);
     MemPtrUnlock(tmp);
   } else if (cbP->stage == 4) {
-    FrmCustomAlert(ALERT_debug, "Finished Progress", "", "");
     tmp = TNGetLockedString(PROGRESS_files_done);
     if (p != NULL) {
       StrPrintF(cbP->textP, tmp, p->max);
@@ -543,7 +539,6 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     }
 
     MLreadBytesIntoBuffer(file->md4, 16);
-    FrmCustomAlert(ALERT_debug, "Receiving 3", "", "");
 
     MLread_UInt32(&file->size);
     MLread_UInt32(&file->downloaded);
@@ -560,10 +555,8 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     file->download_rate = MemHandleNew(4);
     MLread_String(&file->download_rate);
 
-    FrmCustomAlert(ALERT_debug, "Receiving 4", "", "");
     MLread_UInt16(&tmpNum);
 
-    FrmCustomAlert(ALERT_debug, "Receiving 4a", "", "");
     // We do not care about chunk ages
     for (j=0; j < tmpNum; ++j) {
       MemHandle tmpM=MemHandleNew(10);
@@ -577,7 +570,6 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
       //MLreadDiscard(tmp16);
     }
 
-    FrmCustomAlert(ALERT_debug, "Receiving 4b", "", "");
     file->file_age = MemHandleNew(11);
     MLread_String(&file->file_age);
 
