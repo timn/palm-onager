@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: index.php,v 1.2 2003/07/29 20:34:03 tim Exp $ */
+/* $Id: index.php,v 1.3 2003/07/29 22:31:44 tim Exp $ */
 
 $title="niemueller.de - palm software - Onager";
 $meta_desc="MLdonkey GUI for your PalmOS handheld.";
@@ -141,9 +141,6 @@ Palm IIIxe (PalmOS 4.1, gray, tested on real device, works, see issues)<br/>
   It is available for for Palm m5xx and m125 and works pretty good
   (Maybe in the future we will get that
   <a href="http://www.sychip.com/wlan-module.html" target="_new">SD WLAN adapter</a> :-)
- </td><td><img src="xircom_wireless.gif" alt="Xircom WLAN"></td>
- </tr>
-</table>
 If you have an older Palm you can use a null modem connection (your cradle or serial
 HotSync cable is just right for this) to connect your Palm to the internet. This could
 become handy if you mldonkey server is running the whole day but has no monitor. So
@@ -154,6 +151,9 @@ machine have a look <a href="/wiki/?PalmNullModemPPP">here</a><br/>
 But still the WLAN connection should be much more comfortable. If you have a Tungsten C
 please report how it works! My setup in university is Palm m515, Xircom WLAN and
 Mergic VPN.
+ </td><td><img src="xircom_wireless.gif" alt="Xircom WLAN"></td>
+ </tr>
+</table>
 
 
 <h5>Known issues</h5>
@@ -190,9 +190,9 @@ You may download the Palm install file or sources provided as a .zip and as a .t
  <tr>
   <td>Download the source</td>
   <td>&nbsp; &nbsp;</td>
-  <td><a href="<?=$basename?>-<?=$version?>_dist/<?=$basename?>-<?=$version?>-<?=$key?>.tar.gz">.tar.gz</a> (<?=filesize("{$basename}-source-{$version}_dist/{$basename}-source-{$version}-{$key}.tar.gz")?> Bytes)</td>
+  <td><a href="<?=$basename?>-<?=$version?>_dist/<?=$basename?>-source-<?=$version?>.tar.gz">.tar.gz</a> (<?=filesize("{$basename}-{$version}_dist/{$basename}-source-{$version}.tar.gz")?> Bytes)</td>
   <td>&nbsp;</td>
-  <td><a href="<?=$basename?>-<?=$version?>_dist/<?=$basename?>-<?=$version?>-<?=$key?>.zip">.zip</a> (<?=filesize("{$basename}-source-{$version}_dist/{$basename}-source-{$version}-{$key}.zip")?> Bytes)</td>
+  <td><a href="<?=$basename?>-<?=$version?>_dist/<?=$basename?>-source-<?=$version?>.zip">.zip</a> (<?=filesize("{$basename}-{$version}_dist/{$basename}-source-{$version}.zip")?> Bytes)</td>
  </tr>
 </table>
 <br/>
