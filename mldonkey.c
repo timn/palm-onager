@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.13 2003/07/27 22:48:41 tim Exp $
+/* $Id: mldonkey.c,v 1.14 2003/07/29 20:29:14 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -331,7 +331,8 @@ static void MLgoodPassCb(MLcoreCode opc, UInt32 dataSize) {
 }
 
 static void MLbadPassCb(MLcoreCode opc, UInt32 dataSize) {
-  ProgressUpdate(-1, 4, NULL, true);
+  ProgressStop();
+  FrmAlert(ALERT_pass);
   gMLprocessLocked = true;
   MLdisconnect();
 }

@@ -1,4 +1,4 @@
-/* $Id: common.rcp.in,v 1.5 2003/07/23 22:20:42 tim Exp $
+/* $Id: common.rcp.in,v 1.6 2003/07/29 20:29:14 tim Exp $
  *
  * common stuff like menus, bitmaps, alerts
  */
@@ -94,10 +94,12 @@ string id PROGRESS_conn_title "connprog_title"
 string id PROGRESS_conn_est "connprog_est"
 string id PROGRESS_conn_auth "connprog_auth"
 string id PROGRESS_conn_succ "connprog_succ"
-string id PROGRESS_conn_bad "connprog_bad"
 
 string id PROGRESS_files_title "filesprog_title"
 string id PROGRESS_files_req "filesprog_req"
 string id PROGRESS_files_work "filesprog_work"
 string id PROGRESS_files_done "filesprog_done"
 string id PROGRESS_files_fallback "filesprog_fallback"
+
+string id CHUNKS_no "chunks_no"
+string id CHUNKS_toomany "chunks_toomany"

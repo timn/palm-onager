@@ -1,4 +1,4 @@
-/* $Id: mlchunks.c,v 1.6 2003/07/19 15:04:56 tim Exp $
+/* $Id: mlchunks.c,v 1.7 2003/07/29 20:29:14 tim Exp $
  *
  * ML chunk gadget code
  * Created: April 10th 2003
@@ -62,9 +62,26 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
   MLchunkInfo *chunkInfo=(MLchunkInfo *)gadget->data;
   UInt16 len, i;
   UInt16 chunksWithExtra = 0, chunkWidth=0;
-
   
-  if (! chunkInfo->chunks || ! chunkInfo->availability)  return;
+  if (! chunkInfo->chunks || ! chunkInfo->availability || (StrLen(chunkInfo->chunks) == 0)) {
+    Char *nochunks = TNGetLockedString(CHUNKS_no);
+    FontID oldFont;
+    RectangleType stringRect;
+    UInt16 offsetx, offsety;
+
+    oldFont = FntSetFont(boldFont);
+
+    offsetx = (bounds.extent.x - FntLineWidth(nochunks, StrLen(nochunks))) / 2;
+    offsety = (bounds.extent.y - FntLineHeight()) / 2;
+    
+    RctSetRectangle(&stringRect, bounds.topLeft.x+offsetx, bounds.topLeft.y+offsety,
+                                 bounds.extent.x, bounds.extent.y);
+    TNDrawCharsToFitWidth(nochunks, &stringRect);
+
+    FntSetFont(oldFont);
+    MemPtrUnlock(nochunks);
+    return;
+  }
 
   len = StrLen(chunkInfo->chunks);
   FrmGetObjectBounds(frm, TNGetObjectIndexFromPtr(frm, gadget), &bounds);
@@ -82,7 +99,25 @@ void MLchunkGadgetDraw(FormGadgetTypeInCallback *gadget) {
    * forgot about that the first time...
    */
 
-  if (len > bounds.extent.x)  return;
+  if (len > bounds.extent.x) {
+    Char *toomanychunks = TNGetLockedString(CHUNKS_toomany);
+    FontID oldFont;
+    RectangleType stringRect;
+    UInt16 offsetx, offsety;
+
+    oldFont = FntSetFont(boldFont);
+
+    offsetx = (bounds.extent.x - FntLineWidth(toomanychunks, StrLen(toomanychunks))) / 2;
+    offsety = (bounds.extent.y - FntLineHeight()) / 2;
+    
+    RctSetRectangle(&stringRect, bounds.topLeft.x+offsetx, bounds.topLeft.y+offsety,
+                                 bounds.extent.x, bounds.extent.y);
+    TNDrawCharsToFitWidth(toomanychunks, &stringRect);
+
+    FntSetFont(oldFont);
+    MemPtrUnlock(toomanychunks);
+    return;
+  }
 
   // Save old color
   TNSetForeColorRGB(&red, &old);

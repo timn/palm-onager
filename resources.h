@@ -1,4 +1,4 @@
-/* $Id: resources.h,v 1.8 2003/07/24 21:32:29 tim Exp $
+/* $Id: resources.h,v 1.9 2003/07/29 20:29:14 tim Exp $
  *
  * ID's for use in ressource definitions
  *
@@ -75,13 +75,16 @@
 #define PROGRESS_conn_est 4501
 #define PROGRESS_conn_auth 4502
 #define PROGRESS_conn_succ 4503
-#define PROGRESS_conn_bad 4504
 
 #define PROGRESS_files_title 4510
 #define PROGRESS_files_req 4511
 #define PROGRESS_files_work 4512
 #define PROGRESS_files_done 4513
 #define PROGRESS_files_fallback 4514
+
+
+#define CHUNKS_no 4900
+#define CHUNKS_toomany 4901
 
 
 #define BITMAP_net 5001
