@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.5 2003/07/16 16:45:08 tim Exp $
+/* $Id: mlfiles.c,v 1.6 2003/07/16 19:14:44 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -48,6 +48,10 @@ static void FilesFree(void) {
       MemPtrFree(gMLfilesStrings[i]);
       gMLfilesStrings[i] = NULL;
     }
+  }
+  if (gMLfilesTrigger != NULL) {
+    MemPtrFree(gMLfilesTrigger);
+    gMLfilesTrigger = NULL;
   }
 }
 
@@ -204,14 +208,12 @@ static void FilesUpdate(UInt16 n) {
 
   // Network Name
   if (gMLfilesStrings[MLFILES_NET] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_NET]);
-  net = MLgetNetworkByID(file->net_num);
+  net = MLnetworkGetByID(file->net_num);
   if (! net) {
-    FrmCustomAlert(ALERT_debug, "Network not found", "", "");
     FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net_label));
     FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
   } else {
     tmp = MemHandleLock(net->name);
-    FrmCustomAlert(ALERT_debug, tmp, "", "");
     gMLfilesStrings[MLFILES_NET] = MemPtrNew(StrLen(tmp)+1);
     MemSet(gMLfilesStrings[MLFILES_NET], StrLen(tmp)+1, 0);
     StrNCopy(gMLfilesStrings[MLFILES_NET], tmp, StrLen(tmp));
@@ -239,7 +241,6 @@ static void FilesFinished(void) {
   ControlType *ctl;
   FormType *frm;
 
-  //FrmCustomAlert(ALERT_debug, "FilesFinished", "", "");
   PrgStopDialog(gMLfilesProgress, true);
   NetTrafficEnable();
 
@@ -389,14 +390,11 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
   UInt32 size=0;
   UInt16 numFiles = 0, i=0;
   
-  NetTrafficStart();
   if ((err = MLreadHead(&size, &opcode)) != errNone) {
-    NetTrafficStop();
     return;
   }
 
   if ((err = MLread_UInt16(&numFiles)) != errNone) {
-    NetTrafficStop();
     return;
   }
 

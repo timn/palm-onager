@@ -1,4 +1,4 @@
-/* $Id: mldonkey.h,v 1.2 2003/07/16 16:45:08 tim Exp $
+/* $Id: mldonkey.h,v 1.3 2003/07/16 19:14:44 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -59,6 +59,6 @@ extern void MLbuffer_write(MLguiCode opcode);
 extern void MLbuffer_destroy(void);
 extern void MLrequest(MLguiCode opcode);
 
-extern MLnetInfo* MLgetNetworkByID(UInt32 id);
+extern MLnetInfo* MLnetworkGetByID(UInt32 id);
 
 #endif // MLDONKEY_H

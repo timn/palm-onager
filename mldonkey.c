@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.2 2003/07/16 16:45:08 tim Exp $
+/* $Id: mldonkey.c,v 1.3 2003/07/16 19:14:44 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -16,7 +16,7 @@ MemHandle gMLbufferHandle;
 Char *gMLbuffer=NULL;
 MLconfig *gMLconfig=NULL;
 Boolean gMLprocessLocked=true;
-MLcallbackID gMLstatsFooterCbID, gMLfilesFooterCbID;
+MLcallbackID gMLstatsFooterCbID, gMLfilesFooterCbID, gMLnetworkCbID, gMLcoreProtoCbID, gMLbadPassCbID;
 MLcoreCode gMLopcode=0;
 UInt32 gMLsize = 0;
 TNlist *gMLnetworks=NULL;
@@ -344,14 +344,11 @@ void MLrequest(MLguiCode opcode) {
 
 
 
-MLnetInfo* MLgetNetworkByID(UInt32 id) {
+MLnetInfo* MLnetworkGetByID(UInt32 id) {
   TNlist *tmpList = gMLnetworks;
 
   while (tmpList) {
     MLnetInfo *net=(MLnetInfo *)tmpList->data;
-    Char *tmp = MemHandleLock(net->name);
-    FrmCustomAlert(ALERT_debug, "Network search: ", tmp, "");
-    MemHandleUnlock(net->name);
     if (net->id == id) {
       break;
     }
@@ -458,6 +455,9 @@ Err MLdisconnect(void) {
   gMLconfig->connected = false;
   MLcallbackUnregister(gMLstatsFooterCbID);
   MLcallbackUnregister(gMLfilesFooterCbID);
+  MLcallbackUnregister(gMLnetworkCbID);
+  MLcallbackUnregister(gMLcoreProtoCbID);
+  MLcallbackUnregister(gMLbadPassCbID);
   while (gMLprocessLocked) { sleep(1); }
   gMLprocessLocked=true;
 
@@ -465,13 +465,64 @@ Err MLdisconnect(void) {
   while (tmpList) {
     MLnetInfo *net = (MLnetInfo *)tmpList->data;
     MemHandleFree(net->name);
-    MemPtrFree(net);
     tmpList = tmpList->next;
   }
   TNlistFree(gMLnetworks);
   gMLnetworks = NULL;
 
   return err;
+}
+
+static void MLnetworkCb(MLcoreCode opc, UInt32 dataSize) {
+  Err err;
+  MLcoreCode opcode=0;
+  UInt32 size=0;
+  MLnetInfo *net = MemPtrNew(sizeof(MLnetInfo));
+  UInt16 tmp16;
+  
+  NetTrafficStart();
+  if ((err = MLreadHead(&size, &opcode)) != errNone) {
+    NetTrafficStop();
+    return;
+  }
+
+  MLread_UInt32(&net->id);
+  net->name = MemHandleNew(20);
+  MLread_String(&net->name);
+  MLread_Bool(&net->enabled);
+
+  MLread_UInt16(&tmp16);
+  MLreadDiscard(tmp16);
+
+  MLread_UInt64(&net->uploaded);
+  MLread_UInt64(&net->downloaded);
+
+  gMLnetworks = TNlistAppend(gMLnetworks, net);
+
+  NetTrafficStop();
+}
+
+static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
+  Err err;
+  MLcoreCode opcode=0;
+  UInt32 size=0, ui32=0;
+  
+  NetTrafficStart();
+  if ((err = MLreadHead(&size, &opcode)) != errNone) {
+    NetTrafficStop();
+    return;
+  }
+
+  MLread_UInt32(&ui32);
+  gMLconfig->CoreProto=ui32;
+
+  NetTrafficStop();
+}
+
+static void MLbadPassCb(MLcoreCode opc, UInt32 dataSize) {
+  FrmAlert(ALERT_pass);
+  MLdisconnect();
+  FrmGotoForm(FORM_main);
 }
 
 
@@ -483,9 +534,6 @@ Err MLconnect(MLconfig *config) {
 
 
   if ((err = MLsocket(gMLconfig, &gMLsocket)) == errNone) {
-    MLcoreCode opcode;
-    UInt32 bytes=0;
-    MemHandle m=MemHandleNew(1);
 
     MLbuffer_create(sizeof(UInt32));
     MLbuffer_append_UInt32(MLDONKEY_PROTO_VER);
@@ -500,64 +548,12 @@ Err MLconnect(MLconfig *config) {
     MLbuffer_write(GuiExtensions);
     MLbuffer_destroy();        
 
-    MLread(&bytes, &opcode, &m);
-    if (opcode == CoreProtocol) {
-      UInt32 *ver;
-      ver = MemHandleLock(m);
-      gMLconfig->CoreProto=NetSwap32(*ver);
-      MemHandleUnlock(m);
-    }
-#ifdef MLDEBUG_OPCODE
-    tmpVer = MemHandleLock(m);
-    version_server = NetSwap32(*tmpVer);
-    MemHandleUnlock(m);
-    StrPrintF(temp, "Message (opcode %u) was %lu bytes long and version is %lu", opcode, bytes, version_server);
-    FrmCustomAlert(ALERT_debug, temp, "", "");
-#endif
-
-    while (MLdataWaiting(&bytes, &opcode)) {
-      // We do not (yet?) care about these...
-      if (opcode == Network_info) {
-        MLnetInfo *net = MemPtrNew(sizeof(MLnetInfo));
-        UInt16 tmp16;
-
-        MLreadHead(&bytes, &opcode);
-
-        MLread_UInt32(&net->id);
-        net->name = MemHandleNew(20);
-        MLread_String(&net->name);
-        MLread_Bool(&net->enabled);
-
-        MLread_UInt16(&tmp16);
-        MLreadDiscard(tmp16);
-
-        MLread_UInt64(&net->uploaded);
-        MLread_UInt64(&net->downloaded);
-
-        TNlistAppend(gMLnetworks, net);
-
-      } else {
-        MLreadDiscard(bytes+sizeof(MLmsgHead));
-      }
-      //MLread(&bytes, &opcode, &m);
-
-#ifdef MLDEBUG_MOTD
-      if (opcode == Console) {
-        MemHandle motd=MemHandleNew(1);
-        Char *motdstr;
-        MLparse_string((Char *)MemHandleLock(m), &motd);
-        motdstr = MemHandleLock(motd);
-        FrmCustomAlert(ALERT_debug, "MOTD: ", motdstr, "");
-        MemHandleUnlock(m);
-        MemHandleUnlock(motd);
-        MemHandleFree(motd);
-      }
-#endif MLDEBUG
-    }
-
     gMLconfig->connected = true;
     MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLstatsFooterCb);
     MLcallbackRegister(DownloadFiles_v4, &gMLfilesFooterCbID, MLfilesCb);
+    MLcallbackRegister(Network_info, &gMLnetworkCbID, MLnetworkCb);
+    MLcallbackRegister(CoreProtocol, &gMLcoreProtoCbID, MLcoreProtoCb);
+    MLcallbackRegister(BadPassword, &gMLbadPassCbID, MLbadPassCb);
 
     MLbuffer_create(StrLen(gMLconfig->password)+2+StrLen(gMLconfig->login)+2);
     MLbuffer_append_String(gMLconfig->password);
@@ -565,13 +561,6 @@ Err MLconnect(MLconfig *config) {
     MLbuffer_write(AuthUserPass);
     MLbuffer_destroy();
 
-    MLread(&bytes, &opcode, &m);
-    if (opcode == BadPassword) {
-      FrmAlert(ALERT_pass);
-      MLdisconnect();
-    }
-
-    MemHandleFree(m);
   }
 
 
