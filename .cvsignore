@@ -1,4 +1,4 @@
 *.bin
 *.cache
-UniDonkey UniDonkey.prc
-UniDonkey.pws
+*.prc
+*.pws
