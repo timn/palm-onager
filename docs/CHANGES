@@ -1,0 +1,22 @@
+
+ [Uni Donkey] CHANGES
+==============================================================================
+
+
+=== v0.1
+
+
+* Wed Jul 09 2003 Tim Niemueller <tim@niemueller.de>
+- CVS import, basic stuff is working
+- Rewrote chunks gadget
+- wrote webpage for nice CVS import :-)
+
+* Tue Mar 12 2003 Tim Niemueller <tim@niemueller.de>
+- First steps to get the net code in place.
+- Using CVS now from the beginning now
+
+* Tue Mar 12 2003 Tim Niemueller <tim@niemueller.de>
+- Dev Session at Tob. Created project on Medha's pushing
+
+
+$Id: CHANGES,v 1.1 2003/07/09 12:05:16 tim Exp $

@@ -1,0 +1,25 @@
+/* $Id: form_stats.rcp.in,v 1.1 2003/07/09 12:05:16 tim Exp $
+ *
+ * Form to display statistics
+ */
+
+#include "resources.h"
+
+form id FORM_stats at (0 0 160 160)
+menuid MENU_main
+begin
+  title "Stats"
+
+  button "" id STATS_ding at (100 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
+  button "" id STATS_ded at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloaded selectedbitmapid BITMAP_downloaded_clicked
+
+
+  label "Downloaded" autoid at (2 25) font 1
+  label "                    " id STATS_LABEL_down at (prevleft prevbottom+2)
+  label "Uploaded" autoid at (prevleft prevbottom+5) font 1
+  label "                    " id STATS_LABEL_up at (prevleft prevbottom+2)
+
+  button "Disconnect" id STATS_disco at (5 130 auto auto)
+end
+
+//   gadget id STATS_GADGET_chunks at (2 prevbottom+5 156 16)

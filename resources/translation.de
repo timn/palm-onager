@@ -1,0 +1,37 @@
+/* $Id: translation.de,v 1.1 2003/07/09 12:05:16 tim Exp $ */
+
+translation "german"
+begin
+
+/* about translation */
+  "translator" = "Tim Niemueller"
+  "trans_mail" = "tim@niemueller.de"
+  "trans_hdev" = "Palm m515"
+  "trans_palm" = "4.1"
+  "trans_trby" = "Deutsche Übersetzung von:"
+
+
+/* menu */
+  "men_ab" = "Info"
+
+
+/* alerts */
+  "al_ok" = "OK"
+  "al_rominc1" = "System inkompatibel"
+  "al_rominc2" = "System Version 3.5 oder höher wird benötigt, um diese Anwendung zu nutzen."
+  "al_nonet1" = "Kein Netzwerk"
+  "al_nonet2" = "Die Netzwerkbibliothek konnte nicht gefunden werden oder sie ist zu alt."
+  "al_iff1" = "Netzwerkfehler"
+  "al_iff2" = "Mindestens ein Netzwerkinterface konnte nicht gestartet werden."
+  "al_pwd1" = "Login fehlgeschlagen"
+  "al_pwd2" = "Benutzername und/oder Passwort ungültig."
+
+
+/* about */
+  "ab_title" = "Über UniDonkey"
+  "ab_d1" = "Palm Frontend"
+  "ab_d2" = "für mldonkey"
+  "ab_get" = "Neueste Version auf"
+
+
+end

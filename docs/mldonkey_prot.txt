@@ -1,0 +1,214 @@
+
+  Description of the new interface protocol (as a coder sees it)
+  ==============================================================
+
+The protocol description that comes with mldonkey as of this writing is old,
+insufficient and wrong.
+
+I wanted to write a client for PalmOS handhelds (Uni Donkey) and so had to
+"reverse engineer" the protocol by reading the source and sniffing the traffic.
+To help others to write nice GUIs I wrote this file to help you to
+understand the protocol quickly and without having to learn OCaml (as I needed).
+
+Most usefule sources for this are the following files from the mldonkey CVS
+checkout of 2.04 rc 7:
+
+common/guiDecoding.ml
+common/guiEncoding.ml
+net/littleEndian.ml
+applets/api/gui_protocol.(h|c)
+
+Further you might consider reading the following files from UniDonkey
+(especially if you want to get it imperative):
+
+mltypes.h
+mldonkey.(c|h)
+
+The specification should be moved in an human readable form to this file in
+the future. That is damn true. But since no one seems to want to do this...
+
+Some basics have been taken from the original documentation.
+
+
+Sniffing
+========
+When working on the protocol it can be very helpful to sniff the network traffic
+to see what's going on. You might have a look at Ethereal and tcpflow.
+Keep in mind that you will probably see the traffic in Hex. So seeing 14 in the
+stream as opcode means that actually code 20 was meant (just to remember stupid
+me next time...).
+
+
+Basic ideas:
+============
+
+  The GUI must connect to the core via a TCP socket. Binary messages are
+sent on this socket, with the following format:
+
+| size of content (4 bytes) | content |
+
+size of content: 4 bytes integer (in little Endian order, ie
+  1025 = 1 + 256 * 4 = |   1 |   4 |  0 |  0 | ), indicating the length
+  of the content of the message
+
+content: the content of the message. the content starts by a 2 bytes integer,
+  which is the opcode of the message, followed with the arguments.
+  If the opcode is not known by the GUI, the GUI can simply discard the whole
+  message, and continue with other messages (this way, partial implementations
+  of the protocol should work for simple functions).
+
+  | opcode (2 bytes) | arguments |
+
+When connected, both sides start by sending a 0-opcode message, with
+a 4-bytes argument indicating the version of the protocol used 
+(CoreProtocol and GuiProtocol messages in the mltypes.h file).
+
+Then, they should use the smallest protocol version, so that all messages 
+should be understandandable by both sides (the core should always remain
+backward compatible in the future with old versions of this GUI protocol).
+
+Current version of the protocol is defined in commong/guiEncoding.ml. Search
+for best_gui_version.
+
+This document describes protocol 14.
+
+The remaining of this file will describe encoding and meaning of messages.
+Some remarks:
+
+ - In the core, all data structures have unique identifiers (an integer)
+   in their types (one result and one server can have the same number, but
+   not two different results). Thus, these identifiers are often used
+   between the GUI and the core.
+
+ - The basic core engine uses the following types:
+
+      network: a peer to peer network (donkey, open napster, gnutella, ...)
+      search: a search (network independant)
+
+      server: a server on a given network
+      file: a file being downloaded on a given network
+      client: a source for a file being downloaded, or a friend
+      result: the result of a search, or a browse operation on a friend
+      user: another peer connected on a server, or a source for a result of 
+             a search (it will become a client if we download its files or
+             if it becomes a friend)
+      room: a chat room, with many users connected to dialog.
+
+Basic encoding:
+===============
+
+  For basic types, the following encoding is used in the messages:
+
+int8: one byte
+int16: two bytes in little Endian order
+int/int32: 4 bytes in little Endian order
+                      1025 = 1 + 256 * 4  =     |   1 |   4 |  0 |  0 | 
+
+string: an int16 for the length, followed by the characters of the string
+  without 0 at the end.
+
+bool: an int8, with 0 for FALSE and 1 for TRUE.
+
+float: a string (see above), ASCII representation of the float.
+
+list or arrays of values: an int16 for the number of elements, followed by
+   the elements, without separators. 
+
+records, pairs, tuples: the fields are encoded without separators.
+
+md4: the 16 bytes corresponding to the hash.
+
+
+
+A very basic session
+====================
+
+Let's start with a short example. As a test I wrote a small piece of code just
+to connect, get the peers information and disconnect right away.
+The session would look like this:
+
+Client sends
+00000000  06 00 00 00 00 00 0e 00  00 00
+
+Then Core answers
+00000000  06 00 00 00 00 00 0e 00  00 00                   ........ ..
+0000000A  21 00 00 00 14 00 01 00  00 00 06 00 44 6f 6e 6b !....... ....Donk
+0000001A  65 79 01 00 00 00 00 00  00 00 00 00 00 00 00 00 ey...... ........
+0000002A  00 00 00 00 00                                   .....
+0000002F  a6 01 00 00 13 00 a2 01  0a 0a 2a 2a 2a 2a 2a 2a ¦.....¢. ..******
+0000003F  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+0000004F  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+0000005F  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+0000006F  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+0000007F  2a 2a 2a 2a 2a 0a 0a 20  20 20 20 20 20 20 20 20 *****..          
+0000008F  20 20 20 20 20 20 20 20  20 20 20 20 20 20 20 20                  
+0000009F  57 65 6c 63 6f 6d 65 20  74 6f 20 4d 4c 64 6f 6e Welcome  to MLdon
+000000AF  6b 65 79 20 20 20 20 20  20 20 20 20 20 0a 09 09 key           ...
+000000BF  09 20 0a 09 09 09 20 54  68 65 20 63 75 72 72 65 . .... T he curre
+000000CF  6e 74 20 73 74 61 62 6c  65 20 76 65 72 73 69 6f nt stabl e versio
+000000DF  6e 20 69 73 20 32 2e 30  34 72 31 20 0a 09 09 09 n is 2.0 4r1 ....
+000000EF  20 54 68 65 20 63 75 72  72 65 6e 74 20 75 6e 73  The cur rent uns
+000000FF  74 61 62 6c 65 20 76 65  72 73 69 6f 6e 20 69 73 table ve rsion is
+0000010F  20 32 2e 30 34 72 31 2d  33 2e 20 0a 09 09 09 20  2.04r1- 3. .... 
+0000011F  0a 09 09 09 20 50 6c 65  61 73 65 2c 20 61 73 6b .... Ple ase, ask
+0000012F  20 79 6f 75 72 20 66 72  69 65 6e 64 73 20 75 73  your fr iends us
+0000013F  69 6e 67 20 6f 6c 64 20  76 65 72 73 69 6f 6e 73 ing old  versions
+0000014F  20 74 6f 0a 20 20 20 20  20 20 20 20 20 20 20 20  to.             
+0000015F  20 20 20 20 20 20 20 20  20 20 20 20 20 20 20 20                  
+0000016F  75 70 67 72 61 64 65 20  61 73 20 73 6f 6f 6e 20 upgrade  as soon 
+0000017F  61 73 20 70 6f 73 73 69  62 6c 65 2e 0a 2a 2a 2a as possi ble..***
+0000018F  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+0000019F  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+000001AF  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+000001BF  2a 2a 2a 2a 2a 2a 2a 2a  2a 2a 2a 2a 2a 2a 2a 2a ******** ********
+000001CF  2a 2a 2a 2a 2a 2a 2a 2a  0a 0a                   ******** ..
+
+Connection ended.
+
+So you see first the clients sends a GuiProtocol(0) message to the server
+indicating a message which will be 6 bytes long (2 byte opcode + 4 byte ver).
+Then the server answers with the same kind of message CoreProtocol(0).
+Now the server sends us some basic information about himself.
+(Note: This can be used to spy it out. It gives the complete info and MOTD away
+without the need for authentication. So keeping allowed IP ranges small is wise)
+
+
+
+Messages from Core to GUI for protocol 14
+=========================================
+
+This is incomplete. You are really welcome to help out. I write about messages
+that I discovered during my coding of UniDonkey.
+
+CoreProtocol (opcode 0) + int32 (protocol version)
+
+    Indicates the most up-to-date version of the protocol understood by the 
+    core.
+
+Options_info (opcode 1) + a list of string pairs
+
+    Indicates the names of some options and their associated value (converted
+    to a string).
+
+DefineSearches (opcode 3) + query description list
+
+    Indicates to the GUI predefined or user-defined queries formats.
+    See buf_query in gui_proto.ml to see how queries are encoded exactly.
+
+Result_info (opcode 4) + result description
+
+    Describes a result. The result is not associated with a search.
+    Another message is used to associate the result (number) with a search.
+
+    result format: see buf_result in gui_proto.ml.
+
+etc...
+
+Messages from GUI to Core for protocol 0
+========================================
+
+
+
+
+
+

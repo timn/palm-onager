@@ -1,0 +1,183 @@
+# Anjuta Version 1.0.2 
+Compatibility Level: 1 
+
+<PROJECT_DESCRIPTION_START>
+
+<PROJECT_DESCRIPTION_END>
+<CONFIG_PROGS_START>
+<CONFIG_PROGS_END>
+<CONFIG_LIBS_START>
+<CONFIG_LIBS_END>
+<CONFIG_HEADERS_START>
+<CONFIG_HEADERS_END>
+<CONFIG_CHARACTERISTICS_START>
+<CONFIG_CHARACTERISTICS_END>
+<CONFIG_LIB_FUNCS_START>
+<CONFIG_LIB_FUNCS_END>
+<CONFIG_ADDITIONAL_START>
+<CONFIG_ADDITIONAL_END>
+<CONFIG_FILES_START>
+<CONFIG_FILES_END>
+<MAKEFILE_AM_START>
+<MAKEFILE_AM_END>
+
+props.file.type=project
+
+anjuta.version=1.0.2
+anjuta.compatibility.level=1
+
+project.name=UniDonkey
+project.type=GENERIC
+project.target.type=EXECUTABLE
+project.version=0.1
+project.author=Tim Niemueller
+project.source.target=palmos
+project.has.gettext=0
+project.programming.language=C
+project.excluded.modules=intl
+
+project.config.extra.modules.before=
+project.config.extra.modules.after=
+project.config.blocked=1
+project.config.disable.overwriting=1 1 1 1 1 1 1 1 1 
+
+project.menu.entry=UniDonkey Version 0.1
+project.menu.group=Application
+project.menu.comment=UniDonkey Version 0.1
+project.menu.icon=
+project.menu.need.terminal=0
+
+project.configure.options=
+anjuta.program.arguments=
+preferences.indent.automatic=1
+preferences.use.tabs=0
+preferences.indent.opening=0
+preferences.indent.closing=0
+preferences.tabsize=2
+preferences.indent.size=2
+preferences.autoformat.style=GNU coding style
+preferences.autoformat.custom.style= -i8 -sc -bli0 -bl0 -cbi0 -ss
+preferences.autoformat.disable=0
+preferences.debugger.command=gdb
+preferences.ui.designer=glade '$(project.name).glade'
+preferences.help.browser=devhelp -s '$(current.file.selection)'
+
+module.include.name=.
+module.include.type=
+module.include.expanded=1
+module.include.files=\
+	UniDonkey.h\
+	resources.h\
+	tnglue.h\
+	net.h\
+	mldonkey.h\
+	mltypes.h\
+	mlstats.h\
+	mlprefs.h\
+	tnlist.h\
+	mlcallback.h\
+	mlchunks.h\
+	mlfiles.h
+
+module.source.name=.
+module.source.type=
+module.source.expanded=1
+module.source.files=\
+	UniDonkey.c\
+	tnglue.c\
+	net.c\
+	mldonkey.c\
+	mlstats.c\
+	mlprefs.c\
+	tnlist.c\
+	mlcallback.c\
+	mlchunks.c\
+	mlfiles.c
+
+module.pixmap.name=.
+module.pixmap.type=
+module.pixmap.expanded=0
+module.pixmap.files=\
+	images/back.bmp\
+	images/add.bmp\
+	images/add_clicked.bmp\
+	images/back_clicked.bmp\
+	images/beam.bmp\
+	images/beam_clicked.bmp\
+	images/cancel.bmp\
+	images/cancel_clicked.bmp\
+	images/delete.bmp\
+	images/delete_clicked.bmp\
+	images/edit.bmp\
+	images/edit_clicked.bmp\
+	images/icon_256c.bmp\
+	images/icon_small_256c.bmp\
+	images/icon_small_sw.bmp\
+	images/icon_sw.bmp\
+	images/next.bmp\
+	images/next2.bmp\
+	images/next_clicked.bmp\
+	images/ok.bmp\
+	images/ok_clicked.bmp\
+	webpage/screens/courselist.png\
+	webpage/screens/edit_course.png\
+	webpage/screens/edit_event.png\
+	webpage/screens/exams.png\
+	webpage/screens/main.gif\
+	webpage/screens/main.png\
+	webpage/screens/main2.png\
+	webpage/unimatrix.png\
+	webpage/unimatrix_big.png
+
+module.data.name=.
+module.data.type=
+module.data.expanded=1
+module.data.files=\
+	UniDonkey.def\
+	UniDonkey.mk\
+	languages\
+	resources/translation.en\
+	resources/translation.de\
+	resources/form_main.rcp.in\
+	resources/form_about.rcp.in\
+	resources/common.rcp.in\
+	resources/UniDonkey.rcp.in\
+	resources/form_stats.rcp.in\
+	resources/form_files.rcp.in\
+	webpage/index.php\
+	webpage/faq.php
+
+module.help.name=.
+module.help.type=
+module.help.expanded=0
+module.help.files=
+
+module.doc.name=.
+module.doc.type=
+module.doc.expanded=1
+module.doc.files=\
+	docs/INSTALL\
+	docs/README\
+	docs/mldonkey_prot.txt\
+	docs/CHANGES
+
+module.po.expanded=0
+module.po.files=
+
+compiler.options.supports=
+compiler.options.include.paths=\
+	.\
+	..
+compiler.options.library.paths=
+compiler.options.libraries=
+compiler.options.libraries.selected=
+compiler.options.defines=\
+	HAVE_CONFIG_H
+compiler.options.warning.buttons=0 0 1 1 0 1 0 0 0 0 0 0 0 1 0 0 
+compiler.options.optimize.buttons=0 0 1 0 
+compiler.options.other.buttons=1 0 
+compiler.options.other.c.flags=
+compiler.options.other.l.flags=
+compiler.options.other.l.libs=
+project.source.paths=
+

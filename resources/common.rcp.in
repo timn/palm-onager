@@ -1,0 +1,77 @@
+/* $Id: common.rcp.in,v 1.1 2003/07/09 12:05:16 tim Exp $
+ *
+ * common stuff like menus, bitmaps, alerts
+ */
+
+#include "resources.h"
+
+bitmapfamily id BITMAP_logo "images/icon_sw.bmp" "" "" "images/icon_256c.bmp" compress
+
+##TRANSLATION##
+
+bitmapcolor id BITMAP_ok  "images/ok.bmp" compress
+bitmapcolor id BITMAP_ok_clicked "images/ok_clicked.bmp" compress
+bitmapcolor id BITMAP_cancel  "images/cancel.bmp" compress
+bitmapcolor id BITMAP_cancel_clicked "images/cancel_clicked.bmp" compress
+bitmapcolor id BITMAP_net "images/net.bmp" compress
+bitmapcolor id BITMAP_downloading "images/downloading.bmp" compress
+bitmapcolor id BITMAP_downloading_clicked "images/downloading_clicked.bmp" compress
+bitmapcolor id BITMAP_downloaded "images/downloaded.bmp" compress
+bitmapcolor id BITMAP_downloaded_clicked "images/downloaded_clicked.bmp" compress
+bitmapcolor id BITMAP_progress_start  "images/progress_1.bmp" compress
+bitmapcolor id BITMAP_progress_2  "images/progress_2.bmp" compress
+bitmapcolor id BITMAP_progress_3  "images/progress_3.bmp" compress
+
+
+/* menus */
+
+menu id MENU_main
+begin
+  pulldown "Uni Matrix"
+  begin
+    menuitem "men_ab" id MENUITEM_about "A"
+  end
+end
+
+
+/* alerts */
+
+alert id ALERT_ROMIncompatible
+error
+begin
+  title "al_rominc1"
+  message "al_rominc2"
+  buttons "al_ok"
+end
+
+alert id ALERT_debug
+information
+begin
+  title "Guru Meditation"
+  message "^1^2^3"
+  buttons "OK"
+end
+
+alert id ALERT_noNet
+error
+begin
+  title "al_nonet1"
+  message "al_nonet2"
+  buttons "al_ok"
+end
+
+alert id ALERT_iff
+error
+begin
+  title "al_iff1"
+  message "al_iff2"
+  buttons "al_ok"
+end
+
+alert id ALERT_pass
+error
+begin
+  title "al_pwd1"
+  message "al_pwd2"
+  buttons "al_ok"
+end

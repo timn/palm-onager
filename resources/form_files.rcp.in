@@ -1,0 +1,23 @@
+/* $Id: form_files.rcp.in,v 1.1 2003/07/09 12:05:16 tim Exp $
+ *
+ * Form to display file information
+ */
+
+#include "resources.h"
+
+form id FILES_form at (0 0 160 160)
+menuid MENU_main
+begin
+  title "Files"
+
+  button "" id FILES_ding at (100 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
+  button "" id FILES_ded at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloaded selectedbitmapid BITMAP_downloaded_clicked
+
+  list "" id FILES_list at (4 18 152 auto) visibleitems 3 nonusable
+  popuplist id FILES_trigger FILES_list
+  popuptrigger "" id FILES_trigger at (prevleft prevtop 152 auto) font 0 usable leftanchor
+
+  gadget id FILES_GADGET_chunks at (2 prevbottom+5 156 16)
+
+  button "Disconnect" id FILES_disco at (5 130 auto auto)
+end
