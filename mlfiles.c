@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.9 2003/07/22 18:07:54 tim Exp $
+/* $Id: mlfiles.c,v 1.10 2003/07/22 18:42:09 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -389,13 +389,13 @@ Boolean FilesFormHandleEvent(EventType *event) {
 
       case FILES_ding:
         gMLfilesMode = MLFILES_DING;
-        FilesFormInit(frm);
+        FrmGotoForm(FILES_form);
         handled = true;
         break;
 
       case FILES_ded:
         gMLfilesMode = MLFILES_DLED;
-        FilesFormInit(frm);
+        FrmGotoForm(FILES_form);
         handled = true;
         break;
 
