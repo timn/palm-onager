@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.12 2003/07/22 19:18:31 tim Exp $
+/* $Id: mlfiles.c,v 1.13 2003/07/23 22:20:42 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -9,16 +9,17 @@
 #include "net.h"
 #include "tnglue.h"
 #include "mlchunks.h"
+#include "progress.h"
 
 MLcallbackID gMLfilesCbID;
 TNlist *gMLfilesList=NULL;
 UInt16 gMLfilesNumFiles=0;
 Char *gMLfilesTrigger = NULL;
 ProgressStatus gMLfilesProgStat;
-ProgressType *gMLfilesProgress=NULL;
 MLchunkInfo gMLfilesChunkInfo;
 Char *gMLfilesStrings[MLFILES_NUM_STRINGS];
 UInt8 gMLfilesMode=MLFILES_DING;
+UInt8 gMLfilesCycleCurrent=0;
 
 static void FilesFree(void) {
   TNlist *tmpList = gMLfilesList;
@@ -270,7 +271,7 @@ static void FilesFinished(void) {
   ControlType *ctl;
   FormType *frm;
 
-  PrgStopDialog(gMLfilesProgress, true);
+  ProgressStop();
   NetTrafficEnable();
   NetTrafficStop();
 
@@ -289,16 +290,19 @@ static void FilesFinished(void) {
 
 }
 
-
 static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   ProgressStatus *p=(ProgressStatus *)cbP->userDataP;
   Char *tmp;
 
   if (cbP->stage == 0)  return true;
 
-  if (cbP->canceled) {
-    // How do we want to handle this? mldonkey will send the data
-    // anyway
+  cbP->timeout = sysTicksPerSecond / 2;
+
+  if (cbP->timedOut) {
+    gMLfilesCycleCurrent = ((gMLfilesCycleCurrent+1) % 3);
+    cbP->bitmapId = BITMAP_progress_start + gMLfilesCycleCurrent;
+    cbP->textChanged = false; // do not update text
+    return true;
   }
 
   MemSet(cbP->textP, cbP->textLen, 0);
@@ -312,6 +316,7 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
     StrPrintF(cbP->textP, tmp, p->max);
     MemPtrUnlock(tmp);
     cbP->delay=true;
+    cbP->timeout = 0;
   } else {
     if (p != NULL) {
       tmp = TNGetLockedString(PROGRESS_files_work);
@@ -326,10 +331,9 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
     if (cbP->message != NULL) StrNCat(cbP->textP, cbP->message, cbP->textLen-1);
   }
 
-  cbP->bitmapId = BITMAP_progress_start + (p->current % 3);
-
   return true;
 }
+
 
 static void FilesFormInit(FormType *frm) {
   Char *tmp, *tmp2;
@@ -366,11 +370,8 @@ static void FilesFormInit(FormType *frm) {
 
   NetTrafficStart();
   NetTrafficDisable();
-  tmp = TNGetLockedString(PROGRESS_files_title);
-  gMLfilesProgress = PrgStartDialog(tmp, FilesProgress, &gMLfilesProgStat);
-  MemPtrUnlock(tmp);
-  PrgUpdateDialog(gMLfilesProgress, 0, 1, NULL, true);
-
+  ProgressStartCustom(PROGRESS_files_title, BITMAP_progress_start, 3, &gMLfilesProgStat, FilesProgress);
+  
   if (gMLfilesMode == MLFILES_DING) {
     MLrequest(GetDownloadFiles);
   } else {
@@ -449,7 +450,6 @@ Boolean FilesFormHandleEvent(EventType *event) {
 
 
 
-
 void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
   Err err;
   MLcoreCode opcode=0;
@@ -472,9 +472,9 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     UInt8  tmp8=0;
     MLfileInfo *file = MemPtrNew(sizeof(MLfileInfo));
     MemSet(file, MemPtrSize(file), 0);
-    
+
     gMLfilesProgStat.current = i+1;
-    PrgUpdateDialog (gMLfilesProgress, 0, (i%2)+2, NULL, true);
+    ProgressUpdate(0, (i%2)+2, NULL, false);
 
     MLread_UInt32(&file->file_num);
     MLread_UInt32(&file->net_num);

@@ -1,4 +1,4 @@
-/* $Id: mlstats.c,v 1.4 2003/07/22 19:13:52 tim Exp $
+/* $Id: mlstats.c,v 1.5 2003/07/23 22:20:42 tim Exp $
  *
  * ML stats form code
  * Created: March 31st 2003
@@ -10,7 +10,6 @@
 #include "tnglue.h"
 
 MLcallbackID gMLstatsCbID;
-extern ProgressType *gMLconnectProgress;
 
 static void MLstatsDraw(MLinfo *info) {
   UInt32 downed_high=0, downed_low=0, upped_high=0, upped_low=0;
@@ -45,15 +44,6 @@ void MLstatsFooterCb(MLcoreCode opc, UInt32 dataSize) {
   UInt32 bytes;
   MLcoreCode opcode;
   MemHandle data=MemHandleNew(1);
-
-  if (gMLconnectProgress != NULL) {
-    PrgUpdateDialog(gMLconnectProgress, errNone, 3, NULL, true);
-    PrgStopDialog(gMLconnectProgress, true);
-    gMLconnectProgress = NULL;
-    FrmGotoForm(FORM_stats);
-    NetTrafficEnable();
-    NetTrafficStop();
-  }
 
   if (MLread(&bytes, &opcode, &data) == errNone) {
     // Successfully read packet

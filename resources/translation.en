@@ -1,4 +1,4 @@
-/* $Id: translation.en,v 1.2 2003/07/22 19:14:35 tim Exp $ */
+/* $Id: translation.en,v 1.3 2003/07/23 22:20:42 tim Exp $ */
 
 translation "english"
 begin
@@ -24,8 +24,6 @@ begin
   "al_nonet2" = "The network library could not be found or it is too old."
   "al_iff1" = "Network Error"
   "al_iff2" = "At least one network device could not be started."
-  "al_pwd1" = "Login failed"
-  "al_pwd2" = "User name and/or password are invalid."
   "al_nocon1" = "Cannot connect"
   "al_nocon2" = "Could not connect. Maybe your IP is not allowed to connect?"
 
@@ -68,6 +66,7 @@ begin
   "connprog_est" = "Establishing connection..."
   "connprog_auth" = "Authenticating with server..."
   "connprog_succ" = "Login successful"
+  "connprog_bad" = "User name and/or password are invalid."
 
 
 /* Files list fetch progress */

@@ -5,6 +5,12 @@
 
 === v0.1
 
+* Tue Jul 23 2003 Tim Niemueller <tim@niemueller.de>
+- Various, forgot CHANGEs file...
+- basic features working, infrastructure works
+- can view downloading and downloaded files
+- stats
+- progress dialog now has own framework
 
 * Wed Jul 09 2003 Tim Niemueller <tim@niemueller.de>
 - CVS import, basic stuff is working
@@ -19,4 +25,4 @@
 - Dev Session at Tob. Created project on Medha's pushing
 
 
-$Id: CHANGES,v 1.1 2003/07/09 12:05:16 tim Exp $
+$Id: CHANGES,v 1.2 2003/07/23 22:20:42 tim Exp $

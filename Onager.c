@@ -1,4 +1,4 @@
-/* $Id: Onager.c,v 1.2 2003/07/22 17:59:09 tim Exp $
+/* $Id: Onager.c,v 1.3 2003/07/23 22:20:42 tim Exp $
  *
  * UniDonkey main, event handling
  * Created: March 12th 2003
@@ -12,6 +12,7 @@
 #include "mlprefs.h"
 #include "mlchunks.h"
 #include "mlfiles.h"
+#include "progress.h"
 
 
 Char gCategoryName[dmCategoryLength];
@@ -101,6 +102,7 @@ Boolean HandleMenuEvent (UInt16 command){
 static Boolean MainFormHandleEvent (EventPtr event){
   FormType *frm;
   Boolean handled = false;
+  Char *tmp;
   
   if (event->eType == ctlSelectEvent) {
     // button handling
@@ -108,30 +110,21 @@ static Boolean MainFormHandleEvent (EventPtr event){
     switch (event->data.ctlSelect.controlID) {
 
       case BUTTON_connect:
-        if (connected) {
-          MLdisconnect();
-          FrmCustomAlert(ALERT_debug, "Disconnected", "", "");
-          NetTerm();
-        } else {
-          Char *tmp;
 
-          NetInit();
+        // FrmCustomAlert(ALERT_debug, "HERE 0", "", "");
+        tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_port));
+        if (tmp != NULL) gMainMLconfig->port = StrAToI(tmp);
 
-          // FrmCustomAlert(ALERT_debug, "HERE 0", "", "");
-          tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_port));
-          if (tmp != NULL) gMainMLconfig->port = StrAToI(tmp);
+        tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_host));
+        if (tmp != NULL) StrNCopy(gMainMLconfig->hostname, tmp, ML_CONFIG_FIELD_MAXLEN);
 
-          tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_host));
-          if (tmp != NULL) StrNCopy(gMainMLconfig->hostname, tmp, ML_CONFIG_FIELD_MAXLEN);
+        tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_user));
+        if (tmp != NULL) StrNCopy(gMainMLconfig->login, tmp, ML_CONFIG_FIELD_MAXLEN);
 
-          tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_user));
-          if (tmp != NULL) StrNCopy(gMainMLconfig->login, tmp, ML_CONFIG_FIELD_MAXLEN);
+        tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_pass));
+        if (tmp != NULL) StrNCopy(gMainMLconfig->password, tmp, ML_CONFIG_FIELD_MAXLEN);
 
-          tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_pass));
-          if (tmp != NULL) StrNCopy(gMainMLconfig->password, tmp, ML_CONFIG_FIELD_MAXLEN);
-
-          MLconnect(gMainMLconfig);
-        }
+        MLconnect(gMainMLconfig);
         break;
 
       default:
@@ -255,19 +248,18 @@ static Boolean AppHandleEvent( EventPtr eventP) {
 static void AppEventLoop(void){
 	UInt16 error;
 	EventType event;
-  UInt16 evtTimeout = sysTicksPerSecond; //evtWaitForever
-
+  UInt16 evtTimeout = sysTicksPerSecond / 2;
 
 	do {
 		EvtGetEvent(&event, evtTimeout);
 
+    if (! ProgressHandleEvent(&event))
+      if (! SysHandleEvent(&event))
+        if (! MenuHandleEvent(0, &event, &error))
+          if (! AppHandleEvent(&event))
+            FrmDispatchEvent(&event);
 
-		if (! SysHandleEvent(&event))
-			if (! MenuHandleEvent(0, &event, &error))
-				if (! AppHandleEvent(&event))
-					FrmDispatchEvent(&event);
-
-// Check the heaps after each event
+    // Check the heaps after each event
 		#if EMULATION_LEVEL != EMULATION_NONE
 			MemHeapCheck(0);
 			MemHeapCheck(1);
@@ -288,6 +280,8 @@ static void StopApplication (void){
   MemHandleUnlock(gMainMLconf);
   MemHandleFree(gMainMLconf);
 
+  // Just to be sure...
+  MLdisconnect();
 	// CloseDatabase();
 }
 
@@ -317,44 +311,7 @@ UInt32 PilotMain(UInt16 cmd, MemPtr cmdPBP, UInt16 launchFlags){
 		AppEventLoop ();
 		StopApplication ();
 
-  /***
-  * BEAMING
-  ****/
-/*
-    } else if (cmd == sysAppLaunchCmdSyncNotify) {
-    // Register with the Exchange Manager
-    ExgRegisterData(APP_CREATOR, exgRegExtensionID, "umx");
-  } else if (cmd == sysAppLaunchCmdExgAskUser) {
-    // Always assume "Yes" as answer to the accept dialog since we display our
-    // own on which the user can cancel the data
-    ExgAskParamType *exgAskParam = (ExgAskParamType *)cmdPBP;
-    exgAskParam->result=exgAskOk;
-	} else if (cmd == sysAppLaunchCmdExgReceiveData) {
-    DmOpenRef cats=NULL, dogs=NULL;
-    // Is app active?
-    if (launchFlags & sysAppLaunchFlagSubCall) {
-      // Quit Forms
-      FrmSaveAllForms();
-
-      cats = DatabaseGetRefN(DB_MAIN);
-      dogs = DatabaseGetRefN(DB_DATA);
-      error = BeamReceive(cats, dogs, (ExgSocketPtr) cmdPBP);
-      FrmGotoForm(FORM_main);
-
-    } else {
-      // Another app was running when we were called
-      cats = DmOpenDatabaseByTypeCreator(DATABASE_TYPE, APP_CREATOR, dmModeReadWrite);
-      dogs = DmOpenDatabaseByTypeCreator(DATABASE_DATA_TYPE, APP_CREATOR, dmModeReadWrite);
-      if (! (cats && dogs)) {
-        FrmAlert(ALERT_beamdbfail);
-      } else {
-        error=BeamReceive(cats, dogs, (ExgSocketPtr)cmdPBP);
-      }
-      if (cats)  DmCloseDatabase(cats);
-      if (dogs)  DmCloseDatabase(dogs);
-    }
-*/
-    }
+  }
 
 	return 0;
 }

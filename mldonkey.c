@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.7 2003/07/22 19:14:35 tim Exp $
+/* $Id: mldonkey.c,v 1.8 2003/07/23 22:20:42 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -8,6 +8,7 @@
 #include "mlstats.h"
 #include "mlfiles.h"
 #include "tnglue.h"
+#include "progress.h"
 
 extern UInt16 gNetReference;
 Int32 gMLtimeout=5;
@@ -20,7 +21,6 @@ MLcallbackID gMLstatsFooterCbID, gMLdingCbID, gMLdledCbID, gMLnetworkCbID, gMLco
 MLcoreCode gMLopcode=0;
 UInt32 gMLsize = 0;
 TNlist *gMLnetworks=NULL;
-ProgressType *gMLconnectProgress=NULL;
 
 
 void MLreadDiscard(UInt32 size) {
@@ -444,7 +444,8 @@ Err MLdisconnect(void) {
   Err err;
   TNlist *tmpList;
 
-  NetLibSocketClose(gNetReference, gMLsocket, gMLtimeout, &err);
+  if (gMLconfig->connected)
+    NetLibSocketClose(gNetReference, gMLsocket, gMLtimeout, &err);
 
   gMLconfig->connected = false;
 
@@ -465,6 +466,8 @@ Err MLdisconnect(void) {
   }
   TNlistFree(gMLnetworks);
   gMLnetworks = NULL;
+
+  NetTerm();
 
   return err;
 }
@@ -513,7 +516,7 @@ static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
 
   MLread_UInt32(&ui32);
   gMLconfig->CoreProto=ui32;
-  PrgUpdateDialog(gMLconnectProgress, errNone, 2, NULL, true);
+  ProgressUpdate(errNone, 2, NULL, false);
 
   // Our supported GUI Extensions
   MLbuffer_create(sizeof(UInt16)+sizeof(UInt32)+sizeof(UInt8));
@@ -533,58 +536,34 @@ static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
   NetTrafficStop();
 }
 
+static void MLgoodPassCb(MLcoreCode opc, UInt32 dataSize) {
+  ProgressUpdate(errNone, 3, NULL, true);
+  MLcallbackUnregister(gMLstatsFooterCbID);
+  MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLstatsFooterCb);
+  ProgressStop();
+  NetTrafficEnable();
+  NetTrafficStop();
+  FrmGotoForm(FORM_stats);
+}
+
 static void MLbadPassCb(MLcoreCode opc, UInt32 dataSize) {
-  FrmAlert(ALERT_pass);
+  ProgressUpdate(-1, 4, NULL, true);
   gMLprocessLocked = true;
   MLdisconnect();
-  FrmGotoForm(FORM_main);
 }
-
-static Boolean MLconnectProgress(PrgCallbackDataPtr cbP) {
-  Char *string;
-
-  if (cbP->stage == 0)  return true;
-
-  if (cbP->canceled) {
-    MLdisconnect();
-    PrgStopDialog(gMLconnectProgress, true);
-  }
-
-  MemSet(cbP->textP, cbP->textLen, 0);
-
-  switch (cbP->stage) {
-    case 1:
-    case 2:
-    case 3:
-      string = TNGetLockedString(PROGRESS_conn_title+cbP->stage);
-      StrCopy(cbP->textP, string);
-      MemPtrUnlock(string);
-      break;
-    default:
-      StrCopy(cbP->textP, "Unknown stage");
-      break;
-  }
-
-  cbP->bitmapId = BITMAP_progress_start+2;
-
-  return true;
-}
-
 
 Err MLconnect(MLconfig *config) {
   Err err=errNone;
-  Char *string;
 
   gMLprocessLocked=true;
   NetTrafficStart();
   NetTrafficDisable();
 
+  NetInit();
+
   if (config != NULL) gMLconfig = config;
 
-  string = TNGetLockedString(PROGRESS_conn_title);
-  gMLconnectProgress = PrgStartDialog(string, MLconnectProgress, NULL);
-  PrgUpdateDialog(gMLconnectProgress, errNone, 1, NULL, true);
-  MemPtrUnlock(string);
+  ProgressStart(PROGRESS_conn_title, sysNetworkProgress01Bitmap, 6, NULL);
 
   if ( ((err = MLsocket(gMLconfig, &gMLsocket)) == errNone) &&
        MLsocketIsOpen(gMLsocket, &err) ) {
@@ -594,7 +573,7 @@ Err MLconnect(MLconfig *config) {
     MLbuffer_write(GuiProto);
     MLbuffer_destroy();        
 
-    MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLstatsFooterCb);
+    MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLgoodPassCb);
     MLcallbackRegister(DownloadFiles_v4, &gMLdingCbID, MLfilesCb);
     MLcallbackRegister(DownloadedFiles_v4, &gMLdledCbID, MLfilesCb);
     MLcallbackRegister(Network_info, &gMLnetworkCbID, MLnetworkCb);
@@ -602,7 +581,7 @@ Err MLconnect(MLconfig *config) {
     MLcallbackRegister(BadPassword, &gMLbadPassCbID, MLbadPassCb);
 
   } else {
-    PrgStopDialog(gMLconnectProgress, true);
+    ProgressStop();
     FrmAlert(ALERT_cantconnect);
   }
 

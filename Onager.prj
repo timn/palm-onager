@@ -81,7 +81,8 @@ module.include.files=\
 	tnlist.h\
 	mlcallback.h\
 	mlchunks.h\
-	mlfiles.h
+	mlfiles.h\
+	progress.h
 
 module.source.name=.
 module.source.type=
@@ -95,7 +96,8 @@ module.source.files=\
 	tnlist.c\
 	mlcallback.c\
 	mlchunks.c\
-	mlfiles.c
+	mlfiles.c\
+	progress.c
 
 module.pixmap.name=.
 module.pixmap.type=
