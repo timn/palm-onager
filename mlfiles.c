@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.8 2003/07/19 15:06:28 tim Exp $
+/* $Id: mlfiles.c,v 1.9 2003/07/22 18:07:54 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -291,28 +291,29 @@ static void FilesFinished(void) {
 
 
 static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
-  Char *temp_string;
   ProgressStatus *p=(ProgressStatus *)cbP->userDataP;
 
   if (cbP->stage == 0)  return true;
 
-  if (cbP->textP != NULL) MemPtrFree((MemPtr)cbP->textP);
-  temp_string=(Char *) MemPtrNew(cbP->textLen);
-  MemSet(temp_string, sizeof(temp_string), 0);
-
-  if (cbP->stage == 1) {
-    StrCopy(temp_string, "Requested file list from server\nWaiting for response");
-  } else if ((p != NULL) && (p->current == p->max)) {
-    StrPrintF(temp_string, "Download done.\n%u file specs received", p->max);
-    cbP->delay=true;
-  } else {
-    if (p != NULL) StrPrintF(temp_string, "Downloading file list...\nWorking on %u of %u", p->current, p->max);
-    else StrCopy(temp_string, "Downloading file list...");
-
-    if (cbP->message != NULL) StrNCat(temp_string, cbP->message, cbP->textLen-1);
+  if (cbP->canceled) {
+    // How do we want to handle this? mldonkey will send the data
+    // anyway
   }
 
-  cbP->textP = temp_string;
+  MemSet(cbP->textP, cbP->textLen, 0);
+
+  if (cbP->stage == 1) {
+    StrCopy(cbP->textP, "Requested file list from server\nWaiting for response");
+  } else if ((p != NULL) && (p->current == p->max)) {
+    StrPrintF(cbP->textP, "Download done.\n%u file specs received", p->max);
+    cbP->delay=true;
+  } else {
+    if (p != NULL) StrPrintF(cbP->textP, "Downloading file list...\nWorking on %u of %u", p->current, p->max);
+    else StrCopy(cbP->textP, "Downloading file list...");
+
+    if (cbP->message != NULL) StrNCat(cbP->textP, cbP->message, cbP->textLen-1);
+  }
+
   cbP->bitmapId = BITMAP_progress_start + (p->current % 3);
 
   return true;
@@ -356,7 +357,7 @@ static void FilesFormInit(FormType *frm) {
   NetTrafficStart();
   NetTrafficDisable();
   gMLfilesProgress = PrgStartDialog("Downloading file list", FilesProgress, &gMLfilesProgStat);
-  PrgUpdateDialog (gMLfilesProgress, 0, 1, NULL, true);
+  PrgUpdateDialog(gMLfilesProgress, 0, 1, NULL, true);
 
   if (gMLfilesMode == MLFILES_DING) {
     MLrequest(GetDownloadFiles);
@@ -442,7 +443,7 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
   MLcoreCode opcode=0;
   UInt32 size=0;
   UInt16 numFiles = 0, i=0;
-  
+
   if ((err = MLreadHead(&size, &opcode)) != errNone) {
     return;
   }
