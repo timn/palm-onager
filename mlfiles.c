@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.16 2003/07/27 22:48:42 tim Exp $
+/* $Id: mlfiles.c,v 1.17 2003/07/29 20:29:57 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -58,22 +58,19 @@ static void FilesFree(void) {
 
 
 static MLfileInfo* FilesGetFile(UInt32 n) {
-  TNlist *list = TNlistGetNth(gMLfilesList, n);
+  return (MLfileInfo *)TNlistGetNth(gMLfilesList, n);
   
-  if (list == NULL) return NULL;
-
-  return (MLfileInfo *)list->data;
 }
 
 static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **itemsText) {
   MLfileInfo *file;
   Char *name, *rate, *chunks, *availability;
   FontID oldFont=stdFont;
-  UInt16 i=0;
+  UInt16 i=0, len=0;
   RGBColorType red={0x00, 0xFF, 0x00, 0x00}, old;
   Boolean isRed=false;
 
-  file = FilesGetFile(itemNum);
+  file = (MLfileInfo *)TNlistGetNth(gMLfilesList, itemNum); //FilesGetFile(itemNum);
   if (file == NULL) return;
 
   name = MemHandleLock(file->name);
@@ -81,7 +78,8 @@ static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **items
   chunks = MemHandleLock(file->chunks);
   availability = MemHandleLock(file->availability);
   if (StrCompare(rate, "0.0") != 0)  oldFont = FntSetFont(boldFont);
-  for (i=0; i < StrLen(chunks); ++i) {
+  len = StrLen(chunks);
+  for (i=0; i < len; ++i) {
     // Determine if chunk not avail
     if ( (chunks[i] != '2') && (availability[i] == 0) ) {
       TNSetTextColorRGB(&red, &old);
@@ -312,7 +310,6 @@ static void FilesFinished(void) {
   LstSetDrawFunction(lst, FilesListDrawFunc);
   LstSetHeight(lst, min(gMLfilesNumFiles, MLFILES_MAX_LISTHEIGHT));
   FilesUpdate(0);
-  FrmCustomAlert(ALERT_debug, "FilesFinished finished :-)", "", "");
 }
 
 static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
@@ -559,6 +556,7 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
 
     // We do not care about chunk ages
     for (j=0; j < tmpNum; ++j) {
+      /* Debug code
       MemHandle tmpM=MemHandleNew(10);
       MLread_String(&tmpM);
       if (i == -1) {
@@ -566,8 +564,9 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
         MemHandleUnlock(tmpM);
       }
       MemHandleFree(tmpM);
-      //MLread_UInt16(&tmp16);
-      //MLreadDiscard(tmp16);
+      */
+      MLread_UInt16(&tmp16);
+      MLreadDiscard(tmp16);
     }
 
     file->file_age = MemHandleNew(11);
@@ -616,14 +615,13 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     MLread_UInt32(&file->last_seen);
     MLread_UInt32(&file->priority);
 
-    StrPrintF(temp, "N: %s P: %lu", MemHandleLock(file->name), file->priority);
-    MemHandleUnlock(file->name);
-    FrmCustomAlert(ALERT_debug, "Received file: ", temp, "");
+    // StrPrintF(temp, "N: %s P: %lu", MemHandleLock(file->name), file->priority);
+    // MemHandleUnlock(file->name);
+    // FrmCustomAlert(ALERT_debug, "Received file: ", temp, "");
 
     gMLfilesList = TNlistAppend(gMLfilesList, file);
   }
 
-  FrmCustomAlert(ALERT_debug, "Received files", "", "");
   gMLfilesNumFiles = numFiles;
   FilesFinished();
 
