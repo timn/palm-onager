@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: index.php,v 1.6 2003/07/29 23:20:44 tim Exp $ */
+/* $Id: index.php,v 1.7 2003/11/04 12:30:42 tim Exp $ */
 
 $title="niemueller.de - palm software - Onager";
 $meta_desc="MLdonkey GUI for your PalmOS handheld.";
@@ -14,24 +14,14 @@ $languages=array( "de" => "German/Deutsch",
                   "en" => "English",
                 );
 
-box_begin("Onager", "Last modified ".date ("F d Y H:i:s.", getlastmod()));
+heading_lastmod();
+heading("Onager", "MLdonkey GUI for your PalmOS handheld",
+        "/software/palm/onager/onager_big.png");
 ?>
-<br/>
-
-<table border="0" cellpadding="4">
- <tr>
-  <td rowspan="2" valign="top"><img src="onager_big.png" border="0" alt="Onager"></td>
-  <td><h3>Onager</h3>
- </tr>
- <tr>
-  <td><h4>MLdonkey GUI for your PalmOS handheld.</h4></td>
- </tr>
-</table>
-
 <div class="maintext">
 <h5>Introduction</h5>
 This PalmOS applications acts as a really simple GUI to your
-<a href="http://www.mldonkey.net" target="_new">mldonkey</a>. It uses
+<a href="http://www.mldonkey.net" rel="external">mldonkey</a>. It uses
 the low bandwidth (and low/almost not documented) GUI protocol to communicate
 with your mldonkey. Right now it can display currently downloading and already
 downloaded files and some basic stats. It can also commit files (I do not like
@@ -48,9 +38,9 @@ Some features:
 <br/>
 Just to be sure that you heard: You will need a PalmOS device to run this
 application. You can also use the Palm OS Emulator
-<a href="http://www.palmos.com/dev/tools/emulator/" target="_new">POSE</a>.
+<a href="http://www.palmos.com/dev/tools/emulator/" rel="external">POSE</a>.
 Linux binaries can be found
-<a href="http://sourceforge.net/project/showfiles.php?group_id=2189&release_id=84895" target="_new">here</a>.
+<a href="http://sourceforge.net/project/showfiles.php?group_id=2189" rel="external">here</a>.
 <br/>
 <i>Do not ask for ROM files</i>. I cannot and I do not want to share
 my ROMs with you. Go to the mentioned POSE page, there is a description
@@ -72,8 +62,8 @@ experience is needed). When you are done please send your new translation file v
 
 <h5>FAQ - Frequently Asked Questions</h5>
 There are some questions people are asking again and again. Read the common answers
-<a href="faq.php">here</a>. <span style="color: red;">Please read this FAQ <u>before</u> sending
-<u>any</u> questions!</span>
+<a href="faq.php">here</a>. <span style="color: red;">Please read this FAQ before sending
+any questions!</span>
 
 
 <h5>News</h5>
@@ -84,7 +74,7 @@ and it should be simple to add new features now. Read about the known issues bel
 <h5>Thanks</h5>
 Thanks for all the user contributions for those ideas!
 <br/><br/>
-A special thanks to my friend <a href="http://www.badcode.de" target="_new">Medha</a> who
+A special thanks to my friend <a href="http://www.badcode.de" rel="external">Medha</a> who
 pushed me to start this project and who helped to find some bugs.
 All remaining bugs are my fault, of course. I probably inserted them after Medha's checks...
 
@@ -94,9 +84,9 @@ Some screenshots will give you an impression of the software.
 <br/><br/>
 <table border="0" width="100%" cellpadding="0">
  <tr>
-  <td align="center" width="33%"><img src="screens/login.png" border="1" alt="Login"></td>
-  <td align="center" width="34%"><img src="screens/downloads_list.png" border="1" alt="Downloads list"></td>
-  <td align="center" width="33%"><img src="screens/downloads.png" border="1" alt="Downloads"></td>
+  <td align="center" style="width:33%;"><img src="screens/login.png" style="border:1px solid #c0c0c0;" alt="Login" /></td>
+  <td align="center" style="width:34%;"><img src="screens/downloads_list.png" style="border:1px solid #c0c0c0;" alt="Downloads list" /></td>
+  <td align="center" style="width:33%;"><img src="screens/downloads.png" style="border:1px solid #c0c0c0;" alt="Downloads" /></td>
  </tr>
  <tr>
   <th>Login</th>
@@ -109,9 +99,9 @@ Some screenshots will give you an impression of the software.
  </tr>
 
  <tr>
-  <td align="center"><img src="screens/nofiles.png" border="1" alt="No files"></td>
-  <td align="center"><img src="screens/stats.png" border="1" alt="Basic stats"></td>
-  <td align="center"><img src="screens/downloaded.png" border="1" alt="Downloaded"></td>
+  <td align="center"><img src="screens/nofiles.png" style="border:1px solid #c0c0c0;" alt="No files" /></td>
+  <td align="center"><img src="screens/stats.png" style="border:1px solid #c0c0c0;" alt="Basic stats" /></td>
+  <td align="center"><img src="screens/downloaded.png" style="border:1px solid #c0c0c0;" alt="Downloaded" /></td>
  </tr>
  <tr>
   <th>No files</th>
@@ -136,11 +126,11 @@ Palm IIIxe (PalmOS 4.1, gray, tested on real device, works, see issues)<br/>
  <tr><td>
   The easiest is to get a WLAN adapter for your Palm.
   I use the
-  <a href="http://www.intel.com/support/network/xc/wireless/palm/index.htm" target="_new">Xircom WLAN Adapter</a>
+  <a href="http://www.intel.com/support/network/xc/wireless/palm/index.htm" rel="external">Xircom WLAN Adapter</a>
   for Palm handhelds which has been discontinued and you can get it for about 100 Euro now.
   It is available for for Palm m5xx and m125 and works pretty good
   (Maybe in the future we will get that
-  <a href="http://www.sychip.com/wlan-module.html" target="_new">SD WLAN adapter</a> :-)
+  <a href="http://www.sychip.com/wlan-module.html" rel="external">SD WLAN adapter</a> :-)
 If you have an older Palm you can use a null modem connection (your cradle or serial
 HotSync cable is just right for this) to connect your Palm to the internet. This could
 become handy if you mldonkey server is running the whole day but has no monitor. So
@@ -151,7 +141,7 @@ machine have a look <a href="/wiki/?PalmNullModemPPP">here</a><br/>
 But still the WLAN connection should be much more comfortable. If you have a Tungsten C
 please report how it works! My setup in university is Palm m515, Xircom WLAN and
 Mergic VPN.
- </td><td><img src="xircom_wireless.gif" alt="Xircom WLAN"></td>
+ </td><td><img src="xircom_wireless.gif" alt="Xircom WLAN" /></td>
  </tr>
 </table>
 
@@ -167,7 +157,7 @@ wanna help?
 
 <h5>Download</h5>
 Onager is released and distributed under the terms of the
-<a href="http://www.gnu.org/licenses/gpl.html#SEC1" target="_new">GNU General Public License (GPL)</a>.
+<a href="http://www.gnu.org/licenses/gpl.html#SEC1" rel="external">GNU General Public License (GPL)</a>.
 <br/>
 <span style="color: red;">By downloading and/or using the software you agree
 to this license!</span>
@@ -199,12 +189,5 @@ You may download the Palm install file or sources provided as a .zip and as a .t
 
 </div>
 
-<?php
-box_end();
-
-?>
-
 <? include("$DOCUMENT_ROOT/right.inc.php"); ?>
 <? include("$DOCUMENT_ROOT/footer.inc.php"); ?>
-</body>
-</html>
