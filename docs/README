@@ -1,5 +1,5 @@
 
-Uni Donkey
+Onager
 ==============================================================================
 
 ** Introduction
@@ -7,7 +7,7 @@ Palm GUI Frontend for the MLdonkey P2P network client
 
 
 ** Installation
-Please read the file INSTALL if you want to install Uni Donkey on your
+Please read the file INSTALL if you want to install Onager on your
 PalmOS handheld device.
 
 
@@ -16,4 +16,4 @@ Aachen, March 13th 2003
 
 
 
-$Id: README,v 1.1 2003/07/09 12:05:16 tim Exp $
+$Id: README,v 1.2 2003/09/16 17:32:35 tim Exp $
