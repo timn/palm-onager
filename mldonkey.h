@@ -1,4 +1,4 @@
-/* $Id: mldonkey.h,v 1.7 2003/07/24 22:38:41 tim Exp $
+/* $Id: mldonkey.h,v 1.8 2003/07/29 20:38:53 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -7,7 +7,7 @@
 #ifndef MLDONKEY_H
 #define MLDONKEY_H
 
-#include "UniDonkey.h"
+#include "Onager.h"
 #include "mltypes.h"
 #include "mlcallback.h"
 #include "mlbuffer.h"

@@ -1,13 +1,13 @@
-/* $Id: progress.h,v 1.1 2003/07/23 22:20:42 tim Exp $
+/* $Id: progress.h,v 1.2 2003/07/29 20:38:53 tim Exp $
  *
  * Progress comfort code
  * Created: July 23rd 2003
  */
  
- #ifndef PROGRESS_H
+#ifndef PROGRESS_H
 #define PROGRESS_H
 
-#include "UniDonkey.h"
+#include "Onager.h"
 #include "tnglue.h"
 
 extern void ProgressStartCustom(UInt16 textBase, UInt16 bitmapBase, UInt8 cycleBitmaps, void *data, PrgCallbackFunc cb);

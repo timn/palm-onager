@@ -26,7 +26,7 @@ props.file.type=project
 anjuta.version=1.1.97
 anjuta.compatibility.level=1
 
-project.name=UniDonkey
+project.name=Onager
 project.type=GENERIC
 project.target.type=EXECUTABLE
 project.version=0.1
@@ -42,9 +42,9 @@ project.config.extra.modules.after=
 project.config.blocked=1
 project.config.disable.overwriting=1 1 1 1 1 1 1 1 1 
 
-project.menu.entry=UniDonkey Version 0.1
+project.menu.entry=Onager Version 0.1
 project.menu.group=Application
-project.menu.comment=UniDonkey Version 0.1
+project.menu.comment=Onager Version 0.1
 project.menu.icon=
 project.menu.need.terminal=0
 
@@ -70,7 +70,7 @@ preferences.indent.closing=0
 module.include.name=.
 module.include.type=
 module.include.files=\
-	UniDonkey.h\
+	Onager.h\
 	resources.h\
 	tnglue.h\
 	net.h\
@@ -89,7 +89,7 @@ module.include.files=\
 module.source.name=.
 module.source.type=
 module.source.files=\
-	UniDonkey.c\
+	Onager.c\
 	tnglue.c\
 	net.c\
 	mldonkey.c\
@@ -140,15 +140,15 @@ module.pixmap.files=\
 module.data.name=.
 module.data.type=
 module.data.files=\
-	UniDonkey.def\
-	UniDonkey.mk\
+	Onager.def\
+	Onager.mk\
 	languages\
 	resources/translation.en\
 	resources/translation.de\
 	resources/form_main.rcp.in\
 	resources/form_about.rcp.in\
 	resources/common.rcp.in\
-	resources/UniDonkey.rcp.in\
+	resources/Onager.rcp.in\
 	resources/form_stats.rcp.in\
 	resources/form_files.rcp.in\
 	webpage/index.php\

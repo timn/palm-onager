@@ -1,10 +1,10 @@
-/* $Id: Onager.c,v 1.4 2003/07/24 22:00:23 tim Exp $
+/* $Id: Onager.c,v 1.5 2003/07/29 20:38:53 tim Exp $
  *
- * UniDonkey main, event handling
+ * Onager main, event handling
  * Created: March 12th 2003
  */
 
-#include "UniDonkey.h"
+#include "Onager.h"
 #include "tnglue.h"
 #include "net.h"
 #include "mldonkey.h"
