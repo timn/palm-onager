@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: index.php,v 1.4 2003/07/29 22:54:05 tim Exp $ */
+/* $Id: index.php,v 1.5 2003/07/29 23:10:43 tim Exp $ */
 
 $title="niemueller.de - palm software - Onager";
 $meta_desc="MLdonkey GUI for your PalmOS handheld.";
@@ -173,7 +173,7 @@ Onager is released and distributed under the terms of the
 to this license!</span>
 <br/><br/>
 You may download the Palm install file or sources provided as a .zip and as a .tar.gz file.
-<br/>Latest <b>stable</b> version is <span style="color:red;"><?=$version?></span>.
+<br/>Latest <b>development</b> version is <span style="color:red;"><?=$version?></span> (no stable version yet).
 <br/><br/>
 <table border="0" cellpadding="0" cellspacing="0">
 <? foreach ($languages as $key => $value) { ?>
