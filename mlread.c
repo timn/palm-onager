@@ -1,4 +1,4 @@
-/* $Id: mlread.c,v 1.1 2003/07/24 22:17:01 tim Exp $
+/* $Id: mlread.c,v 1.2 2003/07/29 20:32:03 tim Exp $
  *
  * All da read funcs
  * Created: July 24th 2003
@@ -115,11 +115,18 @@ Err MLread_UInt64(UInt64 *ui64) {
 Err MLread_String(MemHandle *stringHandle) {
   UInt16 length=0;
   Err err;
-  if ( ((err = MLread_UInt16(&length)) == errNone) &&
-       ((err = MemHandleResize(*stringHandle, length+1) ) == errNone) ) {
-     MemSet(MemHandleLock(*stringHandle), length+1, 0);
-     MemHandleUnlock(*stringHandle);
-     err = MLsocketRead(stringHandle, length);
+  if ((err = MLread_UInt16(&length)) == errNone) {
+    if (length > 0) {
+      if ((err = MemHandleResize(*stringHandle, length+1) ) == errNone) {
+         MemSet(MemHandleLock(*stringHandle), length+1, 0);
+         MemHandleUnlock(*stringHandle);
+         err = MLsocketRead(stringHandle, length);
+      }
+    } else {
+      if ((err = MemHandleResize(*stringHandle, 1) ) == errNone) {
+         MemSet(MemHandleLock(*stringHandle), 1, 0);
+      }
+    }
   }
 
   return err;
