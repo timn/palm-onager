@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.7 2003/07/17 00:22:13 tim Exp $
+/* $Id: mlfiles.c,v 1.8 2003/07/19 15:06:28 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -66,14 +66,19 @@ static MLfileInfo* FilesGetFile(UInt32 n) {
 
 static void FilesListDrawFunc(Int16 itemNum, RectangleType *bounds, Char **itemsText) {
   MLfileInfo *file;
-  Char *name;
+  Char *name, *rate;
+  FontID oldFont;
 
   file = FilesGetFile(itemNum);
   if (file == NULL) return;
 
   name = MemHandleLock(file->name);
+  rate = MemHandleLock(file->download_rate);
+  if (StrCompare(rate, "0.0") != 0)  oldFont = FntSetFont(boldFont);
   TNDrawCharsToFitWidth(name, bounds);
+  if (StrCompare(rate, "0.0") != 0)  FntSetFont(oldFont);
   MemHandleUnlock(file->name);
+  MemHandleUnlock(file->download_rate);
 }
 
 
@@ -119,8 +124,19 @@ static void FilesUpdate(UInt16 n) {
   FlpCompDouble f;
   MLnetInfo *net;
 
-  if (! file)  return;
-  //FrmCustomAlert(ALERT_debug, "FilesUpdate", "", "");
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks));
+
+  if (!file || (gMLfilesNumFiles == 0)) {
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_nofiles));
+    FrmDrawForm(frm);
+    return;
+  }
 
   /* Trigger text */
   FrmGetObjectBounds(frm, FrmGetObjectIndex(frm, FILES_list), &list_bounds);
@@ -167,11 +183,6 @@ static void FilesUpdate(UInt16 n) {
   FrmSetGadgetHandler(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks), MLchunkGadgetHandler);
 
   /* Set labels */
-  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
-  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled));
-  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate));
-  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done));
-  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
   // Size
   if (gMLfilesStrings[MLFILES_SIZE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_SIZE]);
   gMLfilesStrings[MLFILES_SIZE] = MemPtrNew(NET_TRAFFIC_MAXLEN);
@@ -246,6 +257,7 @@ static void FilesUpdate(UInt16 n) {
   
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks));
 
   // Draw the form to get data displayed
   FrmDrawForm(frm);
@@ -274,7 +286,7 @@ static void FilesFinished(void) {
   LstSetDrawFunction(lst, FilesListDrawFunc);
   LstSetHeight(lst, min(gMLfilesNumFiles, MLFILES_MAX_LISTHEIGHT));
   FilesUpdate(0);
-  
+
 }
 
 
@@ -309,7 +321,7 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
 static void FilesFormInit(FormType *frm) {
   MemHandle m;
   Char *tmp, *tmp2;
-  
+
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
@@ -321,6 +333,8 @@ static void FilesFormInit(FormType *frm) {
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net_label));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_GADGET_chunks));
+  FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_nofiles));
 
   FrmDrawForm(frm);
   FilesFree();

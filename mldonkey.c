@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.4 2003/07/17 00:22:13 tim Exp $
+/* $Id: mldonkey.c,v 1.5 2003/07/19 15:06:04 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -16,7 +16,7 @@ MemHandle gMLbufferHandle;
 Char *gMLbuffer=NULL;
 MLconfig *gMLconfig=NULL;
 Boolean gMLprocessLocked=true;
-MLcallbackID gMLstatsFooterCbID, gMLfilesFooterCbID, gMLnetworkCbID, gMLcoreProtoCbID, gMLbadPassCbID;
+MLcallbackID gMLstatsFooterCbID, gMLdingCbID, gMLdledCbID, gMLnetworkCbID, gMLcoreProtoCbID, gMLbadPassCbID;
 MLcoreCode gMLopcode=0;
 UInt32 gMLsize = 0;
 TNlist *gMLnetworks=NULL;
@@ -456,7 +456,8 @@ Err MLdisconnect(void) {
   gMLconfig->connected = false;
 
   MLcallbackUnregister(gMLstatsFooterCbID);
-  MLcallbackUnregister(gMLfilesFooterCbID);
+  MLcallbackUnregister(gMLdingCbID);
+  MLcallbackUnregister(gMLdledCbID);
   MLcallbackUnregister(gMLnetworkCbID);
   MLcallbackUnregister(gMLcoreProtoCbID);
   MLcallbackUnregister(gMLbadPassCbID);
@@ -555,8 +556,8 @@ Err MLconnect(MLconfig *config) {
     gMLconfig->connected = true;
 
     MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLstatsFooterCb);
-    MLcallbackRegister(DownloadFiles_v4, &gMLfilesFooterCbID, MLfilesCb);
-    MLcallbackRegister(DownloadedFiles_v4, &gMLfilesFooterCbID, MLfilesCb);
+    MLcallbackRegister(DownloadFiles_v4, &gMLdingCbID, MLfilesCb);
+    MLcallbackRegister(DownloadedFiles_v4, &gMLdledCbID, MLfilesCb);
     MLcallbackRegister(Network_info, &gMLnetworkCbID, MLnetworkCb);
     MLcallbackRegister(CoreProtocol, &gMLcoreProtoCbID, MLcoreProtoCb);
     MLcallbackRegister(BadPassword, &gMLbadPassCbID, MLbadPassCb);

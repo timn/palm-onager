@@ -1,4 +1,4 @@
-/* $Id: form_files.rcp.in,v 1.4 2003/07/17 00:22:13 tim Exp $
+/* $Id: form_files.rcp.in,v 1.5 2003/07/19 15:06:04 tim Exp $
  *
  * Form to display file information
  */
@@ -29,16 +29,19 @@ begin
   label "DLed" id FILES_dled_label at (80 prevtop) font 1
   label "123.3 MB" id FILES_dled at (110 prevtop)
 
-
   label "Rate" id FILES_rate_label at (2 prevbottom+6) font 1
   label "0.1 KB/s" id FILES_rate at (30 prevtop)
 
   label "Done" id FILES_done_label at (80 prevtop) font 1
   label "99.9 %" id FILES_done at (110 prevtop)
 
+
+  label "No files in this view" id FILES_nofiles at (center prevtop) font 1 usable
+
+
   label "Net" id FILES_net_label at (2 prevbottom+6) font 1
   label "Donkey" id FILES_net at (30 prevtop)
 
-  gadget id FILES_GADGET_chunks at (2 120 156 16)
+  gadget id FILES_GADGET_chunks at (1 120 158 18)
 
 end
