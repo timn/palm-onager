@@ -1,6 +1,6 @@
 <?php
 
-/* $Id: index.php,v 1.3 2003/07/29 22:31:44 tim Exp $ */
+/* $Id: index.php,v 1.4 2003/07/29 22:54:05 tim Exp $ */
 
 $title="niemueller.de - palm software - Onager";
 $meta_desc="MLdonkey GUI for your PalmOS handheld.";
@@ -111,12 +111,12 @@ Some screenshots will give you an impression of the software.
  <tr>
   <td align="center"><img src="screens/nofiles.png" border="1" alt="No files"></td>
   <td align="center"><img src="screens/stats.png" border="1" alt="Basic stats"></td>
-  <td align="center"><img src="screens/about.png" border="1" alt="About"></td>
+  <td align="center"><img src="screens/downloaded.png" border="1" alt="Downloaded"></td>
  </tr>
  <tr>
   <th>No files</th>
   <th>Basic stats</th>
-  <th>About</th>
+  <th>Downloaded files, can be commited from within the GUI</th>
  </tr>
 </table>
 
