@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.5 2003/07/19 15:06:04 tim Exp $
+/* $Id: mldonkey.c,v 1.6 2003/07/22 18:08:30 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -20,6 +20,7 @@ MLcallbackID gMLstatsFooterCbID, gMLdingCbID, gMLdledCbID, gMLnetworkCbID, gMLco
 MLcoreCode gMLopcode=0;
 UInt32 gMLsize = 0;
 TNlist *gMLnetworks=NULL;
+ProgressType *gMLconnectProgress=NULL;
 
 
 void MLreadDiscard(UInt32 size) {
@@ -228,7 +229,7 @@ Err MLwriteSocket(MLguiCode opcode, MemHandle *content, NetSocketRef socket) {
   buffer = (Char *)msg;
   err = errNone;
 
-  if (MLsocketOpen(gMLsocket, &err)) {
+  if (MLsocketIsOpen(gMLsocket, &err)) {
     while ((toSent > 0) && (err == errNone)) {
       sent = NetLibSend(gNetReference, socket, buffer, toSent, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
       toSent -= sent;
@@ -236,6 +237,8 @@ Err MLwriteSocket(MLguiCode opcode, MemHandle *content, NetSocketRef socket) {
     }
   } else {
     FrmCustomAlert(ALERT_debug, "Write attempt on closed socket", "", "");
+    MLdisconnect();
+    FrmGotoForm(FORM_main);
   }
 
   MemHandleUnlock(message);
@@ -364,21 +367,12 @@ MLnetInfo* MLnetworkGetByID(UInt32 id) {
 
 
 
-Boolean MLsocketOpen(NetSocketRef socket, Err *err) {
-  NetFDSetType readFDs, writeFDs, exceptFDs;
-  
-  netFDZero(&readFDs);
-  netFDZero(&writeFDs);
-  netFDZero(&exceptFDs);
-  
-  netFDSet(gMLsocket, &writeFDs);
-  if (NetLibSelect(gNetReference, socket+1, &readFDs, &writeFDs, &exceptFDs, 0, err) > 0) {
-    if (netFDIsSet(socket, &writeFDs) && (*err == errNone)) {
-      return true;
-    }
-  }
+Boolean MLsocketIsOpen(NetSocketRef socket, Err *err) {
+  Char junk;
+  UInt16 recd;
+  recd = NetLibReceive(gNetReference, socket, &junk, 1, netIOFlagPeek, NULL, 0, SysTicksPerSecond(), err);
 
-  return false;
+  return ((recd > 0) && (*err != netErrSocketNotOpen));
 }
 
 
@@ -399,7 +393,6 @@ Err MLsocket(MLconfig *config, NetSocketRef *socket) {
 
   hostInfo = NetLibGetHostByName(gNetReference, gMLconfig->hostname, hostInfoBuf,
                                  5 * SysTicksPerSecond(), &err);
-
 
 
   if (! hostInfo || (err != errNone)) {
@@ -424,12 +417,12 @@ Err MLsocket(MLconfig *config, NetSocketRef *socket) {
     socketINaddr->family = netSocketAddrINET;
     socketINaddr->port = NetHToNS(config->port);
     socketINaddr->addr = NetHToNL(addr);
-  
+
     socketLoc = NetLibSocketOpen(gNetReference, netSocketAddrINET,
                                  socketType, 0, gMLtimeout*SysTicksPerSecond(), &err);
-  
+
     if (socketLoc == NET_INVSOCK) {
-      FrmCustomAlert(ALERT_debug, "Invalid Socket", "", "");
+      ErrAlert(err);
     } else {
       resCode = NetLibSocketConnect(gNetReference, socketLoc, &socketAddr,
                                     sizeof(socketAddr), gMLtimeout*SysTicksPerSecond(), &err);
@@ -462,7 +455,6 @@ Err MLdisconnect(void) {
   MLcallbackUnregister(gMLcoreProtoCbID);
   MLcallbackUnregister(gMLbadPassCbID);
 
-  while (gMLprocessLocked) { sleep(1); }
   gMLprocessLocked=true;
 
   tmpList = gMLnetworks;
@@ -510,7 +502,9 @@ static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
   Err err;
   MLcoreCode opcode=0;
   UInt32 size=0, ui32=0;
-  
+
+  gMLconfig->connected = true;
+
   NetTrafficStart();
   if ((err = MLreadHead(&size, &opcode)) != errNone) {
     NetTrafficStop();
@@ -519,41 +513,84 @@ static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
 
   MLread_UInt32(&ui32);
   gMLconfig->CoreProto=ui32;
+  PrgUpdateDialog(gMLconnectProgress, errNone, 2, NULL, true);
+
+  // Our supported GUI Extensions
+  MLbuffer_create(sizeof(UInt16)+sizeof(UInt32)+sizeof(UInt8));
+  MLbuffer_append_UInt16(1);
+  MLbuffer_append_UInt32(1);
+  MLbuffer_append_UInt8(1);
+  MLbuffer_write(GuiExtensions);
+  MLbuffer_destroy();        
+
+  // Send user and password
+  MLbuffer_create(StrLen(gMLconfig->password)+2+StrLen(gMLconfig->login)+2);
+  MLbuffer_append_String(gMLconfig->password);
+  MLbuffer_append_String(gMLconfig->login);
+  MLbuffer_write(AuthUserPass);
+  MLbuffer_destroy();
 
   NetTrafficStop();
 }
 
 static void MLbadPassCb(MLcoreCode opc, UInt32 dataSize) {
   FrmAlert(ALERT_pass);
-  gMLprocessLocked = false;
+  gMLprocessLocked = true;
   MLdisconnect();
   FrmGotoForm(FORM_main);
+}
+
+static Boolean MLconnectProgress(PrgCallbackDataPtr cbP) {
+
+  if (cbP->stage == 0)  return true;
+
+  if (cbP->canceled) {
+    MLdisconnect();
+    PrgStopDialog(gMLconnectProgress, true);
+  }
+
+  MemSet(cbP->textP, cbP->textLen, 0);
+
+  switch (cbP->stage) {
+    case 1:
+      StrCopy(cbP->textP, "Establishing connection...");
+      break;
+    case 2:
+      StrCopy(cbP->textP, "Authenticating on server...");
+      break;
+    case 3:
+      StrCopy(cbP->textP, "Login successful");
+      cbP->delay=true;
+      break;
+    default:
+      StrCopy(cbP->textP, "Unknown stage");
+      break;
+  }
+
+  cbP->bitmapId = BITMAP_progress_start+2;
+
+  return true;
 }
 
 
 Err MLconnect(MLconfig *config) {
   Err err=errNone;
+
   gMLprocessLocked=true;
 
   if (config != NULL) gMLconfig = config;
 
+  NetTrafficDisable();
+  gMLconnectProgress = PrgStartDialog("Connecting", MLconnectProgress, NULL);
+  PrgUpdateDialog(gMLconnectProgress, errNone, 1, NULL, true);
 
-  if ((err = MLsocket(gMLconfig, &gMLsocket)) == errNone) {
+  if ( ((err = MLsocket(gMLconfig, &gMLsocket)) == errNone) &&
+       MLsocketIsOpen(gMLsocket, &err) ) {
 
     MLbuffer_create(sizeof(UInt32));
     MLbuffer_append_UInt32(MLDONKEY_PROTO_VER);
     MLbuffer_write(GuiProto);
     MLbuffer_destroy();        
-
-    // Our supported GUI Extensions
-    MLbuffer_create(sizeof(UInt16)+sizeof(UInt32)+sizeof(UInt8));
-    MLbuffer_append_UInt16(1);
-    MLbuffer_append_UInt32(1);
-    MLbuffer_append_UInt8(1);
-    MLbuffer_write(GuiExtensions);
-    MLbuffer_destroy();        
-
-    gMLconfig->connected = true;
 
     MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLstatsFooterCb);
     MLcallbackRegister(DownloadFiles_v4, &gMLdingCbID, MLfilesCb);
@@ -562,14 +599,9 @@ Err MLconnect(MLconfig *config) {
     MLcallbackRegister(CoreProtocol, &gMLcoreProtoCbID, MLcoreProtoCb);
     MLcallbackRegister(BadPassword, &gMLbadPassCbID, MLbadPassCb);
 
-    MLbuffer_create(StrLen(gMLconfig->password)+2+StrLen(gMLconfig->login)+2);
-    MLbuffer_append_String(gMLconfig->password);
-    MLbuffer_append_String(gMLconfig->login);
-    MLbuffer_write(AuthUserPass);
-    MLbuffer_destroy();
-
+  } else {
+    FrmCustomAlert(ALERT_debug, "Could not connect. Maybe your IP is not allowed to connect?", "", "");
   }
-
 
   gMLprocessLocked=false;
 
@@ -578,29 +610,20 @@ return err;
 
 
 
-
-
-
 Err MLprocess(void) {
   Err err=errNone;
-  
-  // VERY primitive "locking". But since we can almost guarante that MLprocess
-  // is called delayed enough to fit in this "locking scheme".
+
+  // VERY primitive "locking".
   // Yeah, we learned better stuff, whatever...
   if (gMLprocessLocked) return MLerrProcessLocked;
   gMLprocessLocked=true;
 
-  if ( (gMLconfig != NULL) && (gMLconfig->connected)) {
+  if ( (gMLconfig != NULL) ) {
     MLcoreCode opcode;
     UInt32 bytes;
 
     while (MLdataWaiting(&bytes, &opcode)) {
-      // MLreadHead(&bytes, &opcode);
-      if (gMLconfig->connected) {
-        MLcallbackFindAndRun(opcode, bytes);
-      } else {
-        MLreadDiscard(bytes);
-      }
+      MLcallbackFindAndRun(opcode, bytes);
     }
   }
 

@@ -1,4 +1,4 @@
-/* $Id: mltypes.h,v 1.2 2003/07/16 16:45:08 tim Exp $
+/* $Id: mltypes.h,v 1.3 2003/07/22 18:08:30 tim Exp $
  *
  * Types for mldonkey conversation
  * Created: March 22th 2003
@@ -12,6 +12,7 @@
 #define MLerrNoCBleft       0x8002
 #define MLerrInvCbID        0x8003
 #define MLerrProcessLocked  0x8004
+#define MLerrNotConnected   0x8005
 
 
 typedef enum {
@@ -168,7 +169,10 @@ typedef struct {
   Char password[ML_CONFIG_FIELD_MAXLEN+1];
   UInt16 port;
   UInt32    CoreProto;
-  Boolean   connected;
+  UInt8     connected     :1    ;
+  UInt8     loggedIn      :1    ;
+  UInt8     flags         :6    ;
+  
 } MLconfig;
 
 // The MLDonkey status returned

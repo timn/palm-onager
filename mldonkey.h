@@ -1,4 +1,4 @@
-/* $Id: mldonkey.h,v 1.3 2003/07/16 19:14:44 tim Exp $
+/* $Id: mldonkey.h,v 1.4 2003/07/22 18:08:30 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -26,7 +26,7 @@
 
 
 extern Err MLsocket(MLconfig *config, NetSocketRef *socket);
-extern Boolean MLsocketOpen(NetSocketRef socket, Err *err);
+extern Boolean MLsocketIsOpen(NetSocketRef socket, Err *err);
 extern Err MLconnect(MLconfig *config);
 extern Err MLdisconnect(void);
 
