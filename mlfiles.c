@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.14 2003/07/24 21:32:29 tim Exp $
+/* $Id: mlfiles.c,v 1.15 2003/07/25 12:47:40 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -295,6 +295,7 @@ static void FilesFinished(void) {
   ControlType *ctl;
   FormType *frm;
 
+  ProgressUpdate(errNone, 4, NULL, true);
   ProgressStop();
   NetTrafficEnable();
   NetTrafficStop();
@@ -311,7 +312,7 @@ static void FilesFinished(void) {
   LstSetDrawFunction(lst, FilesListDrawFunc);
   LstSetHeight(lst, min(gMLfilesNumFiles, MLFILES_MAX_LISTHEIGHT));
   FilesUpdate(0);
-
+  FrmCustomAlert(ALERT_debug, "FilesFinished finished :-)", "", "");
 }
 
 static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
@@ -330,14 +331,22 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
   }
 
   MemSet(cbP->textP, cbP->textLen, 0);
+  StrPrintF(cbP->textP, "%u", cbP->stage);
+    FrmCustomAlert(ALERT_debug, "Update Progress: ", cbP->textP, "");
+  MemSet(cbP->textP, cbP->textLen, 0);
 
   if (cbP->stage == 1) {
     tmp = TNGetLockedString(PROGRESS_files_req);
     StrCopy(cbP->textP, tmp);
     MemPtrUnlock(tmp);
-  } else if ((p != NULL) && (p->current == p->max)) {
+  } else if (cbP->stage == 4) {
+    FrmCustomAlert(ALERT_debug, "Finished Progress", "", "");
     tmp = TNGetLockedString(PROGRESS_files_done);
-    StrPrintF(cbP->textP, tmp, p->max);
+    if (p != NULL) {
+      StrPrintF(cbP->textP, tmp, p->max);
+    } else {
+      StrPrintF(cbP->textP, tmp, 0);
+    }
     MemPtrUnlock(tmp);
     cbP->delay=true;
     cbP->timeout = 0;
@@ -516,6 +525,7 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     UInt32 tmp32=0;
     UInt16 tmp16=0, tmpNum=0, j=0;
     UInt8  tmp8=0;
+    Char temp[50];
     MLfileInfo *file = MemPtrNew(sizeof(MLfileInfo));
     MemSet(file, MemPtrSize(file), 0);
 
@@ -533,6 +543,7 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     }
 
     MLreadBytesIntoBuffer(file->md4, 16);
+    FrmCustomAlert(ALERT_debug, "Receiving 3", "", "");
 
     MLread_UInt32(&file->size);
     MLread_UInt32(&file->downloaded);
@@ -549,14 +560,24 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     file->download_rate = MemHandleNew(4);
     MLread_String(&file->download_rate);
 
+    FrmCustomAlert(ALERT_debug, "Receiving 4", "", "");
     MLread_UInt16(&tmpNum);
 
+    FrmCustomAlert(ALERT_debug, "Receiving 4a", "", "");
     // We do not care about chunk ages
     for (j=0; j < tmpNum; ++j) {
-      MLread_UInt16(&tmp16);
-      MLreadDiscard(tmp16);      
+      MemHandle tmpM=MemHandleNew(10);
+      MLread_String(&tmpM);
+      if (i == -1) {
+        FrmCustomAlert(ALERT_debug, MemHandleLock(tmpM), "", "");
+        MemHandleUnlock(tmpM);
+      }
+      MemHandleFree(tmpM);
+      //MLread_UInt16(&tmp16);
+      //MLreadDiscard(tmp16);
     }
 
+    FrmCustomAlert(ALERT_debug, "Receiving 4b", "", "");
     file->file_age = MemHandleNew(11);
     MLread_String(&file->file_age);
 
@@ -603,9 +624,14 @@ void MLfilesCb(MLcoreCode opc, UInt32 dataSize) {
     MLread_UInt32(&file->last_seen);
     MLread_UInt32(&file->priority);
 
+    StrPrintF(temp, "N: %s P: %lu", MemHandleLock(file->name), file->priority);
+    MemHandleUnlock(file->name);
+    FrmCustomAlert(ALERT_debug, "Received file: ", temp, "");
+
     gMLfilesList = TNlistAppend(gMLfilesList, file);
   }
 
+  FrmCustomAlert(ALERT_debug, "Received files", "", "");
   gMLfilesNumFiles = numFiles;
   FilesFinished();
 
