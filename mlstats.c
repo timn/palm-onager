@@ -1,11 +1,11 @@
-/* $Id: mlstats.c,v 1.1 2003/07/09 12:05:16 tim Exp $
+/* $Id: mlstats.c,v 1.2 2003/07/17 00:22:13 tim Exp $
  *
  * ML stats form code
  * Created: March 31st 2003
  */
 
 #include "mlstats.h"
-#include "mlchunks.h"
+#include "mlfiles.h"
 #include "net.h"
 #include "tnglue.h"
 
@@ -45,15 +45,6 @@ void MLstatsFooterCb(MLcoreCode opc, UInt32 dataSize) {
   MLcoreCode opcode;
   MemHandle data=MemHandleNew(1);
 
-/*
-  if (req == 1) {
-    MLbuffer_create(0);
-    MLbuffer_write(GetDownloadFiles);
-    MLbuffer_destroy();
-  }
-  req++;
-*/
-  
   if (MLread(&bytes, &opcode, &data) == errNone) {
     // Successfully read packet
 
@@ -98,6 +89,13 @@ Boolean StatsFormHandleEvent(EventType *event) {
         break;
 
       case STATS_ding:
+        FilesSetMode(MLFILES_DING);
+        FrmGotoForm(FILES_form);
+        handled = true;
+        break;
+
+      case STATS_ded:
+        FilesSetMode(MLFILES_DLED);
         FrmGotoForm(FILES_form);
         handled = true;
         break;

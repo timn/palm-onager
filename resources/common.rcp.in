@@ -1,4 +1,4 @@
-/* $Id: common.rcp.in,v 1.2 2003/07/10 10:01:47 tim Exp $
+/* $Id: common.rcp.in,v 1.3 2003/07/17 00:22:13 tim Exp $
  *
  * common stuff like menus, bitmaps, alerts
  */
@@ -23,6 +23,8 @@ bitmapcolor id BITMAP_progress_2  "images/progress_2.bmp" compress
 bitmapcolor id BITMAP_progress_3  "images/progress_3.bmp" compress
 bitmapcolor id BITMAP_disconnect  "images/disconnect.bmp" compress
 bitmapcolor id BITMAP_disconnect_clicked "images/disconnect_clicked.bmp" compress
+bitmapcolor id BITMAP_stats  "images/stats.bmp" compress
+bitmapcolor id BITMAP_stats_clicked "images/stats_clicked.bmp" compress
 
 
 /* menus */

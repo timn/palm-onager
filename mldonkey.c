@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.3 2003/07/16 19:14:44 tim Exp $
+/* $Id: mldonkey.c,v 1.4 2003/07/17 00:22:13 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -452,12 +452,15 @@ Err MLdisconnect(void) {
   TNlist *tmpList;
 
   NetLibSocketClose(gNetReference, gMLsocket, gMLtimeout, &err);
+
   gMLconfig->connected = false;
+
   MLcallbackUnregister(gMLstatsFooterCbID);
   MLcallbackUnregister(gMLfilesFooterCbID);
   MLcallbackUnregister(gMLnetworkCbID);
   MLcallbackUnregister(gMLcoreProtoCbID);
   MLcallbackUnregister(gMLbadPassCbID);
+
   while (gMLprocessLocked) { sleep(1); }
   gMLprocessLocked=true;
 
@@ -521,6 +524,7 @@ static void MLcoreProtoCb(MLcoreCode opc, UInt32 dataSize) {
 
 static void MLbadPassCb(MLcoreCode opc, UInt32 dataSize) {
   FrmAlert(ALERT_pass);
+  gMLprocessLocked = false;
   MLdisconnect();
   FrmGotoForm(FORM_main);
 }
@@ -549,8 +553,10 @@ Err MLconnect(MLconfig *config) {
     MLbuffer_destroy();        
 
     gMLconfig->connected = true;
+
     MLcallbackRegister(Client_stats_v4, &gMLstatsFooterCbID, MLstatsFooterCb);
     MLcallbackRegister(DownloadFiles_v4, &gMLfilesFooterCbID, MLfilesCb);
+    MLcallbackRegister(DownloadedFiles_v4, &gMLfilesFooterCbID, MLfilesCb);
     MLcallbackRegister(Network_info, &gMLnetworkCbID, MLnetworkCb);
     MLcallbackRegister(CoreProtocol, &gMLcoreProtoCbID, MLcoreProtoCb);
     MLcallbackRegister(BadPassword, &gMLbadPassCbID, MLbadPassCb);
@@ -589,7 +595,11 @@ Err MLprocess(void) {
 
     while (MLdataWaiting(&bytes, &opcode)) {
       // MLreadHead(&bytes, &opcode);
-      MLcallbackFindAndRun(opcode, bytes);
+      if (gMLconfig->connected) {
+        MLcallbackFindAndRun(opcode, bytes);
+      } else {
+        MLreadDiscard(bytes);
+      }
     }
   }
 

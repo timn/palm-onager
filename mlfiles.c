@@ -1,4 +1,4 @@
-/* $Id: mlfiles.c,v 1.6 2003/07/16 19:14:44 tim Exp $
+/* $Id: mlfiles.c,v 1.7 2003/07/17 00:22:13 tim Exp $
  *
  * ML files code
  * Created: May 28th 2003
@@ -136,6 +136,7 @@ static void FilesUpdate(UInt16 n) {
 
   CtlSetLabel(ctl, gMLfilesTrigger);
   MemHandleUnlock(file->name);
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
 
   /* Gadget Data */
   chunks =(Char *)MemHandleLock(file->chunks);
@@ -184,6 +185,12 @@ static void FilesUpdate(UInt16 n) {
   NetTrafficStringFromBytes(file->downloaded, gMLfilesStrings[MLFILES_DLED]);
   ctl = TNGetObjectPtr(FILES_dled);
   CtlSetLabel(ctl, gMLfilesStrings[MLFILES_DLED]);
+  if (gMLfilesMode == MLFILES_DING) {
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled_label));
+  } else {
+    FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_dled_label));
+  }
 
   // Download rate
   if (gMLfilesStrings[MLFILES_RATE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_RATE]);
@@ -195,6 +202,12 @@ static void FilesUpdate(UInt16 n) {
   FilesFloatToString(f, gMLfilesStrings[MLFILES_RATE], "KB/s");
   ctl = TNGetObjectPtr(FILES_rate);
   CtlSetLabel(ctl, gMLfilesStrings[MLFILES_RATE]);
+  if (gMLfilesMode == MLFILES_DING) {
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
+  } else {
+    FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
+  }
 
   // Percent Done
   if (gMLfilesStrings[MLFILES_DONE] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_DONE]);
@@ -205,6 +218,12 @@ static void FilesUpdate(UInt16 n) {
   FilesFloatToString(f, gMLfilesStrings[MLFILES_DONE], "%");
   ctl = TNGetObjectPtr(FILES_done);
   CtlSetLabel(ctl, gMLfilesStrings[MLFILES_DONE]);
+  if (gMLfilesMode == MLFILES_DING) {
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
+    FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
+  } else {
+    FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
+  }
 
   // Network Name
   if (gMLfilesStrings[MLFILES_NET] != NULL) MemPtrFree(gMLfilesStrings[MLFILES_NET]);
@@ -226,9 +245,7 @@ static void FilesUpdate(UInt16 n) {
 
   
   FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
+  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
 
   // Draw the form to get data displayed
   FrmDrawForm(frm);
@@ -243,6 +260,7 @@ static void FilesFinished(void) {
 
   PrgStopDialog(gMLfilesProgress, true);
   NetTrafficEnable();
+  NetTrafficStop();
 
   lst = TNGetObjectPtr(FILES_list);
   ctl = TNGetObjectPtr(FILES_trigger);
@@ -256,16 +274,7 @@ static void FilesFinished(void) {
   LstSetDrawFunction(lst, FilesListDrawFunc);
   LstSetHeight(lst, min(gMLfilesNumFiles, MLFILES_MAX_LISTHEIGHT));
   FilesUpdate(0);
-
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_dled_label));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_rate_label));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done));
-  FrmShowObject(frm, FrmGetObjectIndex(frm, FILES_done_label));
+  
 }
 
 
@@ -298,7 +307,9 @@ static Boolean FilesProgress(PrgCallbackDataPtr cbP) {
 }
 
 static void FilesFormInit(FormType *frm) {
-
+  MemHandle m;
+  Char *tmp, *tmp2;
+  
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_trigger));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_size_label));
@@ -311,17 +322,33 @@ static void FilesFormInit(FormType *frm) {
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net));
   FrmHideObject(frm, FrmGetObjectIndex(frm, FILES_net_label));
 
-  FrmDrawForm (frm);
-
+  FrmDrawForm(frm);
   FilesFree();
-  
+
+  m = DmGetResource(strRsc, FILES_string_ding+gMLfilesMode);
+  tmp = MemHandleLock(m);
+  tmp2 = MemPtrNew(StrLen(tmp)+1);
+  MemSet(tmp2, StrLen(tmp)+1, 0);
+  StrNCopy(tmp2, tmp, StrLen(tmp));
+  MemHandleUnlock(m);
+  FrmSetTitle(frm, tmp2);
+  if (gMLfilesStrings[MLFILES_TITL] != NULL)  MemPtrFree(gMLfilesStrings[MLFILES_TITL]);
+  gMLfilesStrings[MLFILES_TITL] = tmp2;
+  FrmDrawForm(frm);
+
   gMLfilesProgStat.max=1;
   gMLfilesProgStat.current=0;
 
+  NetTrafficStart();
   NetTrafficDisable();
   gMLfilesProgress = PrgStartDialog("Downloading file list", FilesProgress, &gMLfilesProgStat);
   PrgUpdateDialog (gMLfilesProgress, 0, 1, NULL, true);
-  MLrequest(GetDownloadFiles);
+
+  if (gMLfilesMode == MLFILES_DING) {
+    MLrequest(GetDownloadFiles);
+  } else {
+    MLrequest(GetDownloadedFiles);
+  }
 }
 
 
@@ -346,7 +373,19 @@ Boolean FilesFormHandleEvent(EventType *event) {
         break;
 
       case FILES_ding:
+        gMLfilesMode = MLFILES_DING;
         FilesFormInit(frm);
+        handled = true;
+        break;
+
+      case FILES_ded:
+        gMLfilesMode = MLFILES_DLED;
+        FilesFormInit(frm);
+        handled = true;
+        break;
+
+      case FILES_stats:
+        FrmGotoForm(FORM_stats);
         handled = true;
         break;
       

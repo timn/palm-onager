@@ -1,9 +1,12 @@
-/* $Id: form_files.rcp.in,v 1.3 2003/07/16 16:45:08 tim Exp $
+/* $Id: form_files.rcp.in,v 1.4 2003/07/17 00:22:13 tim Exp $
  *
  * Form to display file information
  */
 
 #include "resources.h"
+
+string id FILES_string_ding "Downloading"
+string id FILES_string_dled "Downloaded"
 
 form id FILES_form at (0 0 160 160)
 menuid MENU_main
@@ -13,6 +16,7 @@ begin
   button "" id FILES_disco at (100 1 11 11) noframe graphical bitmapid BITMAP_disconnect selectedbitmapid BITMAP_disconnect_clicked
   button "" id FILES_ding at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloading selectedbitmapid BITMAP_downloading_clicked
   button "" id FILES_ded at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_downloaded selectedbitmapid BITMAP_downloaded_clicked
+  button "" id FILES_stats at (prevright+3 1 11 11) noframe graphical bitmapid BITMAP_stats selectedbitmapid BITMAP_stats_clicked
 
   list "" id FILES_list at (4 20 152 auto) visibleitems 3 nonusable
   popuplist id FILES_trigger FILES_list
@@ -38,5 +42,3 @@ begin
   gadget id FILES_GADGET_chunks at (2 120 156 16)
 
 end
-
-/*  button "Disconnect" id FILES_disco at (5 130 auto auto) */
