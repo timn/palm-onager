@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.10 2003/07/24 22:00:23 tim Exp $
+/* $Id: mldonkey.c,v 1.11 2003/07/24 22:17:01 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -16,181 +16,7 @@ NetSocketRef gMLsocket=NULL;
 MLconfig *gMLconfig=NULL;
 Boolean gMLprocessLocked=true;
 MLcallbackID gMLstatsFooterCbID, gMLdingCbID, gMLdledCbID, gMLnetworkCbID, gMLcoreProtoCbID, gMLbadPassCbID;
-MLcoreCode gMLopcode=0;
-UInt32 gMLsize = 0;
 TNlist *gMLnetworks=NULL;
-
-
-void MLreadDiscard(UInt32 size) {
-  MemHandle m = MemHandleNew(4096);
-  UInt32 toDiscard=size;
-  Err err = errNone;
-  Char *buffer = MemHandleLock(m);
-
-  while (toDiscard > 0) {
-    UInt16 toRead, recd=0;
-
-    toRead = min(4096, toDiscard);
-    
-    while ((toRead > 0) && (err == errNone)) {
-      recd = NetLibReceive(gNetReference, gMLsocket, buffer, toRead, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-      toRead -= recd;
-      toDiscard -= recd;
-    }
-  }
-
-  gMLsize -= size;
-
-  MemHandleUnlock(m);
-  MemHandleFree(m);
-}
-
-void MLreadPrepare(UInt32 size, MLcoreCode opcode) {
-  gMLopcode = opcode;
-  gMLsize = size;
-}
-
-UInt32 MLreadLeft(MLcoreCode *opc) {
-  if (opc != NULL) *opc = gMLopcode;
-  return gMLsize;
-}
-
-Err MLreadHead(UInt32 *size, MLcoreCode *opcode) {
-  UInt16 recd=0;
-  MLmsgHead head;
-  Err err=errNone;
-
-  recd = NetLibReceive(gNetReference, gMLsocket, &head, sizeof(head), netIOFlagPeek, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-  if (recd < sizeof(head)) {
-    // We could not read enough bytes for the head. Return InvHead and return for next read try
-    return MLerrInvHead;
-  }
-
-  recd = NetLibReceive(gNetReference, gMLsocket, &head, sizeof(head), 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-
-  *size = NetSwap32(head.size)-2; // -2 for opcode
-  *opcode = NetSwap16(head.opcode);
-
-  MLreadPrepare(*size, *opcode);
-  
-  return errNone;
-}
-
-/* NOTE: The data MemHandle must already be resized! */
-Err MLreadBytes(MemHandle *data, UInt32 size) {
-  UInt16 recd=0, toRead=0;
-  Char *buffer;
-  Err err;
-
-  if ((size > 0)) {
-    // If there is nothing to read this would be nonsense, right?!?
-    if (size > ML_MSG_MAX_SIZE) {
-      return MLerrMsgTooBig;
-    }
-    buffer = MemHandleLock(*data);
-    MemSet(buffer, size, 0);
-    
-    toRead = size;
-    err = errNone;
-    while ((toRead > 0) && (err == errNone)) {
-      recd = NetLibReceive(gNetReference, gMLsocket, buffer, toRead, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
-      toRead -= recd;
-      buffer += recd;
-    }
-    MemHandleUnlock(*data);
-    gMLsize -= size;
-  }
-  
-  return errNone;
-}
-
-
-Err MLreadBytesIntoBuffer(Char *buffer, UInt32 size) {
-  Err err;
-  if (size <= ML_MSG_MAX_SIZE) {
-    Char *tmp;
-    MemHandle m=MemHandleNew(size);
-    if ((err = MLreadBytes(&m, size)) == errNone) {
-      tmp = MemHandleLock(m);
-      MemMove(buffer, tmp, size);
-      MemHandleUnlock(m);
-    }
-    MemHandleFree(m);
-  } else {
-    return MLerrMsgTooBig;
-  }
-
-  return err;
-}
-
-  
-Err MLread(UInt32 *size, MLcoreCode *opcode, MemHandle *content) {
-  Err err=errNone;
-
-  NetTrafficStart();
-
-  if ((err = MLreadHead(size, opcode)) == errNone) {
-    if ((err = MemHandleResize(*content, *size)) == errNone) {
-      err = MLreadBytes(content, *size);
-    }
-  }
-  NetTrafficStop();
-
-return err;
-}
-
-
-
-Err MLread_UInt8(UInt8 *ui8) {
-  return MLreadBytesIntoBuffer((Char *)ui8, sizeof(UInt8));
-}
-
-Err MLread_Bool(Boolean *boole) {
-  UInt8 ui8;
-  Err err;
-  if ((err = MLreadBytesIntoBuffer((Char *)&ui8, sizeof(UInt8))) == errNone) {
-    if (ui8) {
-    *boole = 1;
-    } else {
-      *boole = 0;
-    }
-  }
-
-  return err;
-}
-
-Err MLread_UInt16(UInt16 *ui16) {
-  Err err = MLreadBytesIntoBuffer((Char *)ui16, sizeof(UInt16));
-  *ui16 = NetSwap16(*ui16);
-  return err;
-}
-
-Err MLread_UInt32(UInt32 *ui32) {
-  Err err = MLreadBytesIntoBuffer((Char *)ui32, sizeof(UInt32));
-  *ui32 = NetSwap32(*ui32);
-  return err;
-}
-
-Err MLread_UInt64(UInt64 *ui64) {
-  Err err = MLreadBytesIntoBuffer((Char *)ui64, sizeof(UInt64));
-  UInt32 tmp = NetSwap32(ui64->high);
-  ui64->high = NetSwap32(ui64->low);
-  ui64->low = tmp;
-  return err;
-}
-
-Err MLread_String(MemHandle *stringHandle) {
-  UInt16 length=0;
-  Err err;
-  if ( ((err = MLread_UInt16(&length)) == errNone) &&
-       ((err = MemHandleResize(*stringHandle, length+1) ) == errNone) ) {
-     MemSet(MemHandleLock(*stringHandle), length+1, 0);
-     MemHandleUnlock(*stringHandle);
-     err = MLreadBytes(stringHandle, length);
-  }
-
-  return err;
-}
 
 
 Boolean MLdataWaiting(UInt32 *size, MLcoreCode *opcode) {
@@ -274,6 +100,35 @@ Err MLsocketWrite(MLguiCode opcode, MemHandle *content) {
 
   return err;
 }
+
+
+/* NOTE: The data MemHandle must already be resized! */
+Err MLsocketRead(MemHandle *data, UInt32 size) {
+  UInt16 recd=0, toRead=0;
+  Char *buffer;
+  Err err;
+
+  if ((size > 0)) {
+    // If there is nothing to read this would be nonsense, right?!?
+    if (size > ML_MSG_MAX_SIZE) {
+      return MLerrMsgTooBig;
+    }
+    buffer = MemHandleLock(*data);
+    MemSet(buffer, size, 0);
+    
+    toRead = size;
+    err = errNone;
+    while ((toRead > 0) && (err == errNone)) {
+      recd = NetLibReceive(gNetReference, gMLsocket, buffer, toRead, 0, NULL, 0, gMLtimeout*SysTicksPerSecond(), &err);
+      toRead -= recd;
+      buffer += recd;
+    }
+    MemHandleUnlock(*data);
+  }
+  
+  return errNone;
+}
+
 
 
 MLnetInfo* MLnetworkGetByID(UInt32 id) {

@@ -83,7 +83,8 @@ module.include.files=\
 	mlchunks.h\
 	mlfiles.h\
 	progress.h\
-	mlbuffer.h
+	mlbuffer.h\
+	mlread.h
 
 module.source.name=.
 module.source.type=
@@ -99,7 +100,8 @@ module.source.files=\
 	mlchunks.c\
 	mlfiles.c\
 	progress.c\
-	mlbuffer.c
+	mlbuffer.c\
+	mlread.c
 
 module.pixmap.name=.
 module.pixmap.type=
