@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.3 2003/07/23 22:18:51 tim Exp $
+/* $Id: net.c,v 1.4 2003/07/24 22:00:23 tim Exp $
  *
  * Network related functions
  * Created: March 12th 2003
@@ -70,13 +70,14 @@ Err NetTerm(void) {
     MemHandleUnlock(gNetBitmapHandle);
     DmReleaseResource(gNetBitmapHandle);
     gNetBitmapHandle = NULL;
+    gNetBitmap = NULL;
   }
 
 return errNone;
 }
 
 void NetTrafficStart(void) {
-  if (gNetTrafficEnabled) {
+  if (gNetTrafficEnabled && (gNetBitmap != NULL)) {
     WinDrawBitmap(gNetBitmap, NET_BITMAP_X, NET_BITMAP_Y);
   }
 }

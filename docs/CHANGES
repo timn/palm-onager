@@ -14,6 +14,10 @@
   buffer itself
 - changed mldonkey.(c|h) to use new buffer framework
 - Files can be commited in "Downloaded" view
+- Damnit! Some time ago I disabled many checks in my POSE. So when I gave the
+  current alpha to Medha he got several bugs... These could be removed by
+  rearranging some code. Where problems with not yet allocated or already
+  removed memory chunks. Thanx Medha for pointing this out!
 
 * Tue Jul 23 2003 Tim Niemueller <tim@niemueller.de>
 - Various, forgot CHANGEs file...
@@ -35,4 +39,4 @@
 - Dev Session at Tob. Created project on Medha's pushing
 
 
-$Id: CHANGES,v 1.4 2003/07/24 21:32:29 tim Exp $
+$Id: CHANGES,v 1.5 2003/07/24 22:00:23 tim Exp $

@@ -1,4 +1,4 @@
-/* $Id: Onager.c,v 1.3 2003/07/23 22:20:42 tim Exp $
+/* $Id: Onager.c,v 1.4 2003/07/24 22:00:23 tim Exp $
  *
  * UniDonkey main, event handling
  * Created: March 12th 2003
@@ -111,7 +111,6 @@ static Boolean MainFormHandleEvent (EventPtr event){
 
       case BUTTON_connect:
 
-        // FrmCustomAlert(ALERT_debug, "HERE 0", "", "");
         tmp = FldGetTextPtr(TNGetObjectPtr(FIELD_port));
         if (tmp != NULL) gMainMLconfig->port = StrAToI(tmp);
 
@@ -275,13 +274,14 @@ static void AppEventLoop(void){
 static void StopApplication (void){
   FrmCloseAllForms();
 
+  // Just to be sure...
+  MLdisconnect();
+
   // Handle saving and freeing of config handle
   MLprefsSave(gMainMLconfig);
   MemHandleUnlock(gMainMLconf);
   MemHandleFree(gMainMLconf);
 
-  // Just to be sure...
-  MLdisconnect();
 	// CloseDatabase();
 }
 

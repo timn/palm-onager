@@ -1,4 +1,4 @@
-/* $Id: mldonkey.c,v 1.9 2003/07/24 21:31:41 tim Exp $
+/* $Id: mldonkey.c,v 1.10 2003/07/24 22:00:23 tim Exp $
  *
  * Functions to deal with MLdonkey
  * Created: March 13th 2003
@@ -483,10 +483,10 @@ Err MLconnect(MLconfig *config) {
   Err err=errNone;
 
   gMLprocessLocked=true;
-  NetTrafficStart();
-  NetTrafficDisable();
 
   NetInit();
+  NetTrafficStart();
+  NetTrafficDisable();
 
   if (config != NULL) gMLconfig = config;
 
